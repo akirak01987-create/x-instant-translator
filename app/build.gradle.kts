@@ -18,7 +18,15 @@ android {
     }
 }
 
+configurations.all {
+    // ML Kit pulls in the old split kotlin-stdlib-jdk7/jdk8 artifacts, which now
+    // duplicate classes already merged into kotlin-stdlib itself.
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
+    exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
+}
+
 dependencies {
     implementation("androidx.core:core:1.15.0")
     implementation("com.google.mlkit:translate:17.0.3")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
 }
