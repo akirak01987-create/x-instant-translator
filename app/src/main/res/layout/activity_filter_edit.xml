@@ -28,16 +28,7 @@
 
             <TextView
                 style="@style/SectionLabel"
-                android:text="フィルター名（任意・空欄可）" />
-            <EditText
-                android:id="@+id/edit_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="例：お気に入りの投稿者（空欄でも保存できます）"
-                android:inputType="text" />
-
-            <TextView
-                style="@style/SectionLabel"
+                android:layout_marginTop="0dp"
                 android:text="投稿者（@ユーザー名 または 表示名。空欄なら全投稿者）" />
             <EditText
                 android:id="@+id/edit_author"

@@ -21,6 +21,7 @@ import jp.crescendo.xtranslator.data.AppDatabase;
 import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.DefaultFilterEntity;
 import jp.crescendo.xtranslator.data.FilterEntity;
+import jp.crescendo.xtranslator.filter.FilterMatcher;
 import jp.crescendo.xtranslator.util.ColorPalette;
 import jp.crescendo.xtranslator.util.InsetsUtil;
 
@@ -36,7 +37,6 @@ public class FilterEditActivity extends AppCompatActivity {
     private int selectedBackgroundColor = Color.WHITE;
 
     private View groupFilterOnly;
-    private EditText editName;
     private EditText editAuthor;
     private EditText editKeywords;
     private RadioGroup radioMatchMode;
@@ -83,7 +83,6 @@ public class FilterEditActivity extends AppCompatActivity {
 
     private void bindViews() {
         groupFilterOnly = findViewById(R.id.group_filter_only);
-        editName = findViewById(R.id.edit_name);
         editAuthor = findViewById(R.id.edit_author);
         editKeywords = findViewById(R.id.edit_keywords);
         radioMatchMode = findViewById(R.id.radio_match_mode);
@@ -134,7 +133,6 @@ public class FilterEditActivity extends AppCompatActivity {
 
     private void applyFilter(FilterEntity f) {
         editingFilter = f;
-        editName.setText(f.name);
         editAuthor.setText(f.authorPattern);
         editKeywords.setText(f.keywordsRaw);
         (f.matchAll ? radioAll : radioAny).setChecked(true);
@@ -219,10 +217,7 @@ public class FilterEditActivity extends AppCompatActivity {
             return;
         }
 
-        String name = editName.getText().toString().trim();
-
         FilterEntity f = editingFilter != null ? editingFilter : new FilterEntity();
-        f.name = name;
         f.authorPattern = editAuthor.getText().toString().trim();
         f.keywordsRaw = editKeywords.getText().toString().trim();
         f.matchAll = radioMatchMode.getCheckedRadioButtonId() == R.id.radio_all;
@@ -247,7 +242,7 @@ public class FilterEditActivity extends AppCompatActivity {
     }
 
     private void confirmDelete() {
-        String label = editingFilter.name.isEmpty() ? "このフィルター" : "「" + editingFilter.name + "」";
+        String label = "「" + FilterMatcher.describe(editingFilter) + "」";
         new AlertDialog.Builder(this)
                 .setTitle("フィルターを削除")
                 .setMessage(label + "を削除します。よろしいですか？")

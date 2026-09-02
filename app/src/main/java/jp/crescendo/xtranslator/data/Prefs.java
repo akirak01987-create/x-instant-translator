@@ -5,25 +5,25 @@ import android.content.SharedPreferences;
 
 public final class Prefs {
     private static final String FILE = "app_prefs";
-    private static final String KEY_RETENTION_DAYS = "history_retention_days";
-    public static final int DEFAULT_RETENTION_DAYS = 30;
-    public static final int MIN_RETENTION_DAYS = 1;
-    public static final int MAX_RETENTION_DAYS = 365;
+    private static final String KEY_RETENTION_MINUTES = "history_retention_minutes";
+    public static final int DEFAULT_RETENTION_MINUTES = 1440; // 1日
+    public static final int MIN_RETENTION_MINUTES = 1;
+    public static final int MAX_RETENTION_MINUTES = 525_600; // 365日
 
     private Prefs() {}
 
-    public static int getRetentionDays(Context context) {
-        return prefs(context).getInt(KEY_RETENTION_DAYS, DEFAULT_RETENTION_DAYS);
+    public static int getRetentionMinutes(Context context) {
+        return prefs(context).getInt(KEY_RETENTION_MINUTES, DEFAULT_RETENTION_MINUTES);
     }
 
-    public static void setRetentionDays(Context context, int value) {
-        int clamped = Math.max(MIN_RETENTION_DAYS, Math.min(MAX_RETENTION_DAYS, value));
-        prefs(context).edit().putInt(KEY_RETENTION_DAYS, clamped).apply();
+    public static void setRetentionMinutes(Context context, int value) {
+        int clamped = Math.max(MIN_RETENTION_MINUTES, Math.min(MAX_RETENTION_MINUTES, value));
+        prefs(context).edit().putInt(KEY_RETENTION_MINUTES, clamped).apply();
     }
 
     public static long getRetentionCutoffMillis(Context context) {
-        long days = getRetentionDays(context);
-        return System.currentTimeMillis() - days * 24L * 60L * 60L * 1000L;
+        long minutes = getRetentionMinutes(context);
+        return System.currentTimeMillis() - minutes * 60L * 1000L;
     }
 
     private static SharedPreferences prefs(Context context) {

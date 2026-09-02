@@ -1,6 +1,7 @@
 package jp.crescendo.xtranslator.filter;
 
 import android.graphics.Color;
+import android.text.TextUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +30,7 @@ public final class FilterMatcher {
             if (!f.enabled) continue;
             if (matches(f, author, text)) {
                 Effective e = new Effective();
-                e.filterName = f.name;
+                e.filterName = describe(f);
                 e.translate = f.translateEnabled;
                 e.popup = f.popupEnabled;
                 e.sound = f.soundEnabled;
@@ -54,6 +55,24 @@ public final class FilterMatcher {
             e.backgroundColor = Color.WHITE;
         }
         return e;
+    }
+
+    /** 投稿者・キーワード条件からフィルターの内容を表す短い説明文を組み立てる。一覧表示・履歴表示で共用する。 */
+    public static String describe(FilterEntity f) {
+        StringBuilder sb = new StringBuilder();
+        if (!TextUtils.isEmpty(f.authorPattern)) {
+            sb.append("投稿者: ").append(f.authorPattern.trim());
+        }
+        int keywordCount = 0;
+        for (String k : f.keywordsRaw.split("\n")) {
+            if (!k.trim().isEmpty()) keywordCount++;
+        }
+        if (keywordCount > 0) {
+            if (sb.length() > 0) sb.append(" ／ ");
+            sb.append("キーワード").append(keywordCount).append("件");
+        }
+        if (sb.length() == 0) sb.append("すべての投稿が対象");
+        return sb.toString();
     }
 
     private static boolean matches(FilterEntity f, String author, String text) {

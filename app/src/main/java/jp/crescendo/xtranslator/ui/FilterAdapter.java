@@ -1,7 +1,6 @@
 package jp.crescendo.xtranslator.ui;
 
 import android.graphics.drawable.GradientDrawable;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,6 +19,7 @@ import java.util.List;
 
 import jp.crescendo.xtranslator.R;
 import jp.crescendo.xtranslator.data.FilterEntity;
+import jp.crescendo.xtranslator.filter.FilterMatcher;
 
 public class FilterAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int TYPE_FILTER = 0;
@@ -98,8 +98,7 @@ public class FilterAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         FilterViewHolder h = (FilterViewHolder) holder;
         FilterEntity f = filters.get(position);
 
-        h.name.setText(TextUtils.isEmpty(f.name) ? "（名前未設定のフィルター）" : f.name);
-        h.summary.setText(buildSummary(f));
+        h.name.setText(FilterMatcher.describe(f));
 
         GradientDrawable dot = (GradientDrawable) h.colorDot.getBackground().mutate();
         dot.setColor(f.textColor);
@@ -119,26 +118,10 @@ public class FilterAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         });
     }
 
-    private String buildSummary(FilterEntity f) {
-        StringBuilder sb = new StringBuilder();
-        if (!TextUtils.isEmpty(f.authorPattern)) sb.append("投稿者: ").append(f.authorPattern);
-        int keywordCount = 0;
-        for (String k : f.keywordsRaw.split("\n")) {
-            if (!k.trim().isEmpty()) keywordCount++;
-        }
-        if (keywordCount > 0) {
-            if (sb.length() > 0) sb.append(" ／ ");
-            sb.append("キーワード").append(keywordCount).append("件");
-        }
-        if (sb.length() == 0) sb.append("すべての投稿が対象");
-        return sb.toString();
-    }
-
     static class FilterViewHolder extends RecyclerView.ViewHolder {
         final ImageView dragHandle;
         final View colorDot;
         final TextView name;
-        final TextView summary;
         final Switch enabledSwitch;
 
         FilterViewHolder(@NonNull View itemView) {
@@ -146,7 +129,6 @@ public class FilterAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             dragHandle = itemView.findViewById(R.id.drag_handle);
             colorDot = itemView.findViewById(R.id.color_dot);
             name = itemView.findViewById(R.id.text_name);
-            summary = itemView.findViewById(R.id.text_summary);
             enabledSwitch = itemView.findViewById(R.id.switch_enabled);
         }
     }

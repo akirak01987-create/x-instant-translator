@@ -10,7 +10,6 @@ public class FilterEntity {
     @PrimaryKey(autoGenerate = true)
     public long id;
 
-    public String name = "";
     /** @ユーザー名または表示名の一部。空欄なら全投稿者が対象。 */
     public String authorPattern = "";
     /** キーワードを改行区切りで保持。空なら本文条件なし。 */

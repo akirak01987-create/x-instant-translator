@@ -70,7 +70,7 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
-            android:text="通知履歴の保存期間（日数）" />
+            android:text="通知履歴の保存期間（分）" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -79,7 +79,7 @@
             android:gravity="center_vertical">
 
             <EditText
-                android:id="@+id/edit_retention_days"
+                android:id="@+id/edit_retention_minutes"
                 android:layout_width="120dp"
                 android:layout_height="wrap_content"
                 android:inputType="number" />

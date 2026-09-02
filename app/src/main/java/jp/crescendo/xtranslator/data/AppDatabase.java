@@ -6,7 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {NotificationEntity.class, FilterEntity.class, DefaultFilterEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {NotificationEntity.class, FilterEntity.class, DefaultFilterEntity.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract NotificationDao notificationDao();
 
@@ -20,7 +20,9 @@ public abstract class AppDatabase extends RoomDatabase {
         if (instance == null) {
             synchronized (AppDatabase.class) {
                 if (instance == null) {
-                    instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "x_translator.db").build();
+                    instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "x_translator.db")
+                            .fallbackToDestructiveMigration()
+                            .build();
                 }
             }
         }

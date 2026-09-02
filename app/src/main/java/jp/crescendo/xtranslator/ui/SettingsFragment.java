@@ -34,7 +34,7 @@ public class SettingsFragment extends Fragment {
     private TextView listenerStatusText;
     private TextView postPermissionStatusText;
     private TextView historyCountText;
-    private EditText editRetentionDays;
+    private EditText editRetentionMinutes;
 
     @Nullable
     @Override
@@ -49,7 +49,7 @@ public class SettingsFragment extends Fragment {
         listenerStatusText = view.findViewById(R.id.text_listener_status);
         postPermissionStatusText = view.findViewById(R.id.text_post_permission_status);
         historyCountText = view.findViewById(R.id.text_history_count);
-        editRetentionDays = view.findViewById(R.id.edit_retention_days);
+        editRetentionMinutes = view.findViewById(R.id.edit_retention_minutes);
 
         view.findViewById(R.id.btn_grant_access).setOnClickListener(v ->
                 startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)));
@@ -62,9 +62,9 @@ public class SettingsFragment extends Fragment {
             startActivity(intent);
         });
 
-        view.findViewById(R.id.btn_save_retention).setOnClickListener(v -> saveRetentionDays());
+        view.findViewById(R.id.btn_save_retention).setOnClickListener(v -> saveRetentionMinutes());
 
-        editRetentionDays.setText(String.valueOf(Prefs.getRetentionDays(requireContext())));
+        editRetentionMinutes.setText(String.valueOf(Prefs.getRetentionMinutes(requireContext())));
     }
 
     @Override
@@ -102,19 +102,19 @@ public class SettingsFragment extends Fragment {
             int count = db.notificationDao().count();
             AppExecutors.main(() -> {
                 if (isAdded()) {
-                    historyCountText.setText("現在の保存件数: " + count + " 件（" + Prefs.getRetentionDays(requireContext()) + " 日以内の履歴を保持）");
+                    historyCountText.setText("現在の保存件数: " + count + " 件（" + Prefs.getRetentionMinutes(requireContext()) + " 分以内の履歴を保持）");
                 }
             });
         });
     }
 
-    private void saveRetentionDays() {
-        String raw = editRetentionDays.getText().toString().trim();
+    private void saveRetentionMinutes() {
+        String raw = editRetentionMinutes.getText().toString().trim();
         if (raw.isEmpty()) return;
         try {
             int value = Integer.parseInt(raw);
-            Prefs.setRetentionDays(requireContext(), value);
-            editRetentionDays.setText(String.valueOf(Prefs.getRetentionDays(requireContext())));
+            Prefs.setRetentionMinutes(requireContext(), value);
+            editRetentionMinutes.setText(String.valueOf(Prefs.getRetentionMinutes(requireContext())));
             Toast.makeText(requireContext(), "保存期間を更新しました", Toast.LENGTH_SHORT).show();
             updateHistoryCount();
         } catch (NumberFormatException e) {
