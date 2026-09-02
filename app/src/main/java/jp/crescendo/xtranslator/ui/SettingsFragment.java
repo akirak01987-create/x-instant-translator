@@ -24,16 +24,22 @@ import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
 
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Locale;
+
 import jp.crescendo.xtranslator.R;
 import jp.crescendo.xtranslator.data.AppDatabase;
 import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.Prefs;
+import jp.crescendo.xtranslator.data.RawLogEntity;
 import jp.crescendo.xtranslator.service.XNotificationListener;
 
 public class SettingsFragment extends Fragment {
     private TextView listenerStatusText;
     private TextView postPermissionStatusText;
     private TextView historyCountText;
+    private TextView rawLogText;
     private EditText editRetentionMinutes;
 
     @Nullable
@@ -49,6 +55,7 @@ public class SettingsFragment extends Fragment {
         listenerStatusText = view.findViewById(R.id.text_listener_status);
         postPermissionStatusText = view.findViewById(R.id.text_post_permission_status);
         historyCountText = view.findViewById(R.id.text_history_count);
+        rawLogText = view.findViewById(R.id.text_raw_log);
         editRetentionMinutes = view.findViewById(R.id.edit_retention_minutes);
 
         view.findViewById(R.id.btn_grant_access).setOnClickListener(v ->
@@ -63,6 +70,7 @@ public class SettingsFragment extends Fragment {
         });
 
         view.findViewById(R.id.btn_save_retention).setOnClickListener(v -> saveRetentionMinutes());
+        view.findViewById(R.id.btn_refresh_log).setOnClickListener(v -> refreshRawLog());
 
         editRetentionMinutes.setText(String.valueOf(Prefs.getRetentionMinutes(requireContext())));
     }
@@ -73,6 +81,7 @@ public class SettingsFragment extends Fragment {
         updateListenerStatus();
         updatePostPermissionStatus();
         updateHistoryCount();
+        refreshRawLog();
     }
 
     private void updateListenerStatus() {
@@ -104,6 +113,32 @@ public class SettingsFragment extends Fragment {
                 if (isAdded()) {
                     historyCountText.setText("現在の保存件数: " + count + " 件（" + Prefs.getRetentionMinutes(requireContext()) + " 分以内の履歴を保持）");
                 }
+            });
+        });
+    }
+
+    private void refreshRawLog() {
+        AppDatabase db = AppDatabase.getInstance(requireContext());
+        AppExecutors.background(() -> {
+            List<RawLogEntity> logs = db.rawLogDao().getRecent();
+            AppExecutors.main(() -> {
+                if (!isAdded()) return;
+                if (logs.isEmpty()) {
+                    rawLogText.setText("(まだ記録がありません。何らかの通知が届くとここに表示されます)");
+                    return;
+                }
+                SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss", Locale.JAPAN);
+                StringBuilder sb = new StringBuilder();
+                for (RawLogEntity log : logs) {
+                    sb.append(fmt.format(log.timestamp)).append("  ").append(log.packageName);
+                    sb.append(log.isXPackage ? "  [X宛]" : "");
+                    sb.append(log.textFound ? "  本文あり" : "  本文なし");
+                    if (log.isXPackage && !log.textPreview.isEmpty()) {
+                        sb.append("\n    ").append(log.textPreview);
+                    }
+                    sb.append("\n");
+                }
+                rawLogText.setText(sb.toString().trim());
             });
         });
     }

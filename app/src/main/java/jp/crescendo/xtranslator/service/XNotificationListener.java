@@ -26,6 +26,7 @@ import jp.crescendo.xtranslator.data.DefaultFilterEntity;
 import jp.crescendo.xtranslator.data.FilterEntity;
 import jp.crescendo.xtranslator.data.NotificationEntity;
 import jp.crescendo.xtranslator.data.Prefs;
+import jp.crescendo.xtranslator.data.RawLogEntity;
 import jp.crescendo.xtranslator.filter.FilterMatcher;
 import jp.crescendo.xtranslator.util.PendingIntentCache;
 
@@ -60,11 +61,14 @@ public class XNotificationListener extends NotificationListenerService {
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        if (!isX(sbn.getPackageName())) return;
+        String packageName = sbn.getPackageName();
+        boolean isXPackage = isX(packageName);
         Bundle extras = sbn.getNotification().extras;
         String title = string(extras.getCharSequence(Notification.EXTRA_TITLE));
-        String text = string(extras.getCharSequence(Notification.EXTRA_BIG_TEXT));
-        if (text.isEmpty()) text = string(extras.getCharSequence(Notification.EXTRA_TEXT));
+        String text = extractText(extras);
+        logReceived(packageName, isXPackage, text);
+
+        if (!isXPackage) return;
         if (text.isEmpty()) return;
 
         String author = title;
@@ -79,7 +83,7 @@ public class XNotificationListener extends NotificationListenerService {
 
         boolean isEnglish = looksEnglish(text);
         PendingIntent originalTap = sbn.getNotification().contentIntent;
-        String sourcePackage = sbn.getPackageName();
+        String sourcePackage = packageName;
         String finalText = text;
 
         AppExecutors.background(() -> {
@@ -174,6 +178,43 @@ public class XNotificationListener extends NotificationListenerService {
         if (tapIntent != null) builder.setContentIntent(tapIntent);
 
         NotificationManagerCompat.from(this).notify((int) (20_000 + (historyId % 20_000)), builder.build());
+    }
+
+    /** 本文の取得元を複数試す。通常の通知(EXTRA_TEXT/EXTRA_BIG_TEXT)に加え、
+     * InboxStyle等でまとめられた通知(EXTRA_TEXT_LINES)や、件名のみの通知(EXTRA_SUB_TEXT)も拾う。 */
+    private String extractText(Bundle extras) {
+        String text = string(extras.getCharSequence(Notification.EXTRA_BIG_TEXT));
+        if (text.isEmpty()) text = string(extras.getCharSequence(Notification.EXTRA_TEXT));
+        if (text.isEmpty()) {
+            CharSequence[] lines = extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
+            if (lines != null) {
+                StringBuilder sb = new StringBuilder();
+                for (CharSequence line : lines) {
+                    if (line == null) continue;
+                    String trimmed = line.toString().trim();
+                    if (trimmed.isEmpty()) continue;
+                    if (sb.length() > 0) sb.append("\n");
+                    sb.append(trimmed);
+                }
+                text = sb.toString();
+            }
+        }
+        if (text.isEmpty()) text = string(extras.getCharSequence(Notification.EXTRA_SUB_TEXT));
+        return text;
+    }
+
+    /** 診断用: 通知リスナーが実際に何を受信しているかを記録する。Xパッケージ以外は本文を保存しない。 */
+    private void logReceived(String packageName, boolean isXPackage, String text) {
+        RawLogEntity log = new RawLogEntity();
+        log.timestamp = System.currentTimeMillis();
+        log.packageName = packageName;
+        log.isXPackage = isXPackage;
+        log.textFound = !text.isEmpty();
+        log.textPreview = isXPackage ? text.substring(0, Math.min(text.length(), 60)) : "";
+        AppExecutors.background(() -> {
+            db.rawLogDao().insert(log);
+            db.rawLogDao().trimToRecent();
+        });
     }
 
     private boolean isX(String pkg) {
