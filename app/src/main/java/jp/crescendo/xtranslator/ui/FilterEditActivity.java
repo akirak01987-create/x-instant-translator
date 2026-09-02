@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -14,7 +13,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,6 +22,7 @@ import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.DefaultFilterEntity;
 import jp.crescendo.xtranslator.data.FilterEntity;
 import jp.crescendo.xtranslator.util.ColorPalette;
+import jp.crescendo.xtranslator.util.InsetsUtil;
 
 public class FilterEditActivity extends AppCompatActivity {
     public static final String EXTRA_FILTER_ID = "filter_id";
@@ -56,10 +55,13 @@ public class FilterEditActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter_edit);
+        InsetsUtil.applySystemBarPadding(findViewById(R.id.filter_edit_root), true, true);
 
         filterId = getIntent().getLongExtra(EXTRA_FILTER_ID, -1);
         isDefault = getIntent().getBooleanExtra(EXTRA_IS_DEFAULT, false);
-        setTitle(isDefault ? "デフォルト設定" : (filterId == -1 ? "フィルターを追加" : "フィルターを編集"));
+        String screenTitle = isDefault ? "デフォルト設定" : (filterId == -1 ? "フィルターを追加" : "フィルターを編集");
+        setTitle(screenTitle);
+        ((TextView) findViewById(R.id.text_screen_title)).setText(screenTitle);
 
         bindViews();
         if (isDefault) {
@@ -218,10 +220,6 @@ public class FilterEditActivity extends AppCompatActivity {
         }
 
         String name = editName.getText().toString().trim();
-        if (TextUtils.isEmpty(name)) {
-            Toast.makeText(this, "フィルター名を入力してください", Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         FilterEntity f = editingFilter != null ? editingFilter : new FilterEntity();
         f.name = name;
@@ -249,9 +247,10 @@ public class FilterEditActivity extends AppCompatActivity {
     }
 
     private void confirmDelete() {
+        String label = editingFilter.name.isEmpty() ? "このフィルター" : "「" + editingFilter.name + "」";
         new AlertDialog.Builder(this)
                 .setTitle("フィルターを削除")
-                .setMessage("「" + editingFilter.name + "」を削除します。よろしいですか？")
+                .setMessage(label + "を削除します。よろしいですか？")
                 .setPositiveButton("削除", (d, w) -> {
                     AppDatabase db = AppDatabase.getInstance(this);
                     AppExecutors.background(() -> {

@@ -134,7 +134,7 @@ public class XNotificationListener extends NotificationListenerService {
         long insertedId = db.notificationDao().insert(entity);
         if (insertedId == -1) return; // 既存の同一投稿。DBのユニーク制約で重複保存を防止。
 
-        trimHistoryIfNeeded();
+        db.notificationDao().deleteOlderThan(Prefs.getRetentionCutoffMillis(this));
 
         if (originalTap != null) {
             PendingIntentCache.put(insertedId, originalTap);
@@ -142,15 +142,6 @@ public class XNotificationListener extends NotificationListenerService {
 
         if (effective.popup) {
             postSystemNotification(insertedId, author, original, entity.translatedText, effective, originalTap, sourcePackage);
-        }
-    }
-
-    private void trimHistoryIfNeeded() {
-        int max = Prefs.getMaxHistory(this);
-        int count = db.notificationDao().count();
-        if (count > max) {
-            List<Long> overflowIds = db.notificationDao().oldestIds(count - max);
-            db.notificationDao().deleteByIds(overflowIds);
         }
     }
 

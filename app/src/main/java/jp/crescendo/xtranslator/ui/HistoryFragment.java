@@ -23,6 +23,7 @@ import jp.crescendo.xtranslator.R;
 import jp.crescendo.xtranslator.data.AppDatabase;
 import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.NotificationEntity;
+import jp.crescendo.xtranslator.data.Prefs;
 import jp.crescendo.xtranslator.util.PendingIntentCache;
 
 public class HistoryFragment extends Fragment implements HistoryAdapter.Listener {
@@ -57,6 +58,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
     private void reload() {
         AppDatabase db = AppDatabase.getInstance(requireContext());
         AppExecutors.background(() -> {
+            db.notificationDao().deleteOlderThan(Prefs.getRetentionCutoffMillis(requireContext()));
             List<NotificationEntity> all = db.notificationDao().getAll();
             AppExecutors.main(() -> {
                 if (!isAdded()) return;

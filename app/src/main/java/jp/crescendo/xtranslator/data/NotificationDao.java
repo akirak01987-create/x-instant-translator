@@ -24,9 +24,6 @@ public interface NotificationDao {
     @Query("SELECT COUNT(*) FROM notifications")
     int count();
 
-    @Query("SELECT id FROM notifications ORDER BY receivedAt ASC LIMIT :n")
-    List<Long> oldestIds(int n);
-
-    @Query("DELETE FROM notifications WHERE id IN (:ids)")
-    void deleteByIds(List<Long> ids);
+    @Query("DELETE FROM notifications WHERE receivedAt < :cutoffMillis")
+    void deleteOlderThan(long cutoffMillis);
 }

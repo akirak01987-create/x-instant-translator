@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import jp.crescendo.xtranslator.R;
+import jp.crescendo.xtranslator.util.InsetsUtil;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG_HISTORY = "history";
@@ -26,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
         askNotificationPermission();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        InsetsUtil.applySystemBarPadding(bottomNav, false, true);
+        InsetsUtil.applySystemBarPadding(findViewById(R.id.fragment_container), true, false);
+
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_history) {

@@ -98,7 +98,7 @@ public class FilterAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         FilterViewHolder h = (FilterViewHolder) holder;
         FilterEntity f = filters.get(position);
 
-        h.name.setText(f.name);
+        h.name.setText(TextUtils.isEmpty(f.name) ? "（名前未設定のフィルター）" : f.name);
         h.summary.setText(buildSummary(f));
 
         GradientDrawable dot = (GradientDrawable) h.colorDot.getBackground().mutate();

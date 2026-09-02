@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.mlkit.common.model.DownloadConditions;
@@ -30,9 +31,10 @@ import jp.crescendo.xtranslator.data.Prefs;
 import jp.crescendo.xtranslator.service.XNotificationListener;
 
 public class SettingsFragment extends Fragment {
-    private TextView statusText;
+    private TextView listenerStatusText;
+    private TextView postPermissionStatusText;
     private TextView historyCountText;
-    private EditText editMaxHistory;
+    private EditText editRetentionDays;
 
     @Nullable
     @Override
@@ -44,9 +46,10 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        statusText = view.findViewById(R.id.text_listener_status);
+        listenerStatusText = view.findViewById(R.id.text_listener_status);
+        postPermissionStatusText = view.findViewById(R.id.text_post_permission_status);
         historyCountText = view.findViewById(R.id.text_history_count);
-        editMaxHistory = view.findViewById(R.id.edit_max_history);
+        editRetentionDays = view.findViewById(R.id.edit_retention_days);
 
         view.findViewById(R.id.btn_grant_access).setOnClickListener(v ->
                 startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)));
@@ -59,15 +62,16 @@ public class SettingsFragment extends Fragment {
             startActivity(intent);
         });
 
-        view.findViewById(R.id.btn_save_max_history).setOnClickListener(v -> saveMaxHistory());
+        view.findViewById(R.id.btn_save_retention).setOnClickListener(v -> saveRetentionDays());
 
-        editMaxHistory.setText(String.valueOf(Prefs.getMaxHistory(requireContext())));
+        editRetentionDays.setText(String.valueOf(Prefs.getRetentionDays(requireContext())));
     }
 
     @Override
     public void onResume() {
         super.onResume();
         updateListenerStatus();
+        updatePostPermissionStatus();
         updateHistoryCount();
     }
 
@@ -78,8 +82,18 @@ public class SettingsFragment extends Fragment {
             enabled = nm.isNotificationListenerAccessGranted(
                     new ComponentName(requireContext(), XNotificationListener.class));
         }
-        statusText.setText(enabled ? "✓ 通知へのアクセス：許可済み" : "！通知へのアクセス：未許可");
-        statusText.setTextColor(enabled ? Color.rgb(0, 120, 60) : Color.rgb(190, 50, 35));
+        listenerStatusText.setText(enabled
+                ? "✓ 通知へのアクセス（Xの通知を読み取る許可）：許可済み"
+                : "！通知へのアクセス（Xの通知を読み取る許可）：未許可");
+        listenerStatusText.setTextColor(enabled ? Color.rgb(0, 120, 60) : Color.rgb(190, 50, 35));
+    }
+
+    private void updatePostPermissionStatus() {
+        boolean enabled = NotificationManagerCompat.from(requireContext()).areNotificationsEnabled();
+        postPermissionStatusText.setText(enabled
+                ? "✓ このアプリの通知（ポップアップ表示）：許可済み"
+                : "！このアプリの通知（ポップアップ表示）：未許可 → これが原因で通知が来ないことがあります");
+        postPermissionStatusText.setTextColor(enabled ? Color.rgb(0, 120, 60) : Color.rgb(190, 50, 35));
     }
 
     private void updateHistoryCount() {
@@ -88,20 +102,20 @@ public class SettingsFragment extends Fragment {
             int count = db.notificationDao().count();
             AppExecutors.main(() -> {
                 if (isAdded()) {
-                    historyCountText.setText("現在の保存件数: " + count + " 件 / 上限 " + Prefs.getMaxHistory(requireContext()) + " 件");
+                    historyCountText.setText("現在の保存件数: " + count + " 件（" + Prefs.getRetentionDays(requireContext()) + " 日以内の履歴を保持）");
                 }
             });
         });
     }
 
-    private void saveMaxHistory() {
-        String raw = editMaxHistory.getText().toString().trim();
+    private void saveRetentionDays() {
+        String raw = editRetentionDays.getText().toString().trim();
         if (raw.isEmpty()) return;
         try {
             int value = Integer.parseInt(raw);
-            Prefs.setMaxHistory(requireContext(), value);
-            editMaxHistory.setText(String.valueOf(Prefs.getMaxHistory(requireContext())));
-            Toast.makeText(requireContext(), "保存件数の上限を更新しました", Toast.LENGTH_SHORT).show();
+            Prefs.setRetentionDays(requireContext(), value);
+            editRetentionDays.setText(String.valueOf(Prefs.getRetentionDays(requireContext())));
+            Toast.makeText(requireContext(), "保存期間を更新しました", Toast.LENGTH_SHORT).show();
             updateHistoryCount();
         } catch (NumberFormatException e) {
             Toast.makeText(requireContext(), "数値を入力してください", Toast.LENGTH_SHORT).show();
