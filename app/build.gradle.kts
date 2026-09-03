@@ -17,6 +17,20 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    signingConfigs {
+        getByName("debug") {
+            // CIのたびにランダムなデバッグ鍵で署名されると、APKを更新するたびに
+            // 署名が変わって暗黙的に「アンインストール→再インストール」扱いになり、
+            // 通知アクセス権限や保存データがそのたびに失われてしまう。
+            // リポジトリに固定のデバッグ鍵を同梱し、常に同じ署名でビルドすることで
+            // 通常のアップデートとして扱われるようにする。
+            storeFile = file("keystore/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     packaging {
         resources {
             excludes += setOf(
