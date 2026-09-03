@@ -87,16 +87,23 @@ public class XNotificationListener extends NotificationListenerService {
         String finalText = text;
 
         AppExecutors.background(() -> {
-            List<FilterEntity> filters = db.filterDao().getAll();
-            DefaultFilterEntity defaults = db.defaultFilterDao().getOrCreate();
-            FilterMatcher.Effective effective = FilterMatcher.resolve(filters, defaults, author, finalText);
+            try {
+                List<FilterEntity> filters = db.filterDao().getAll();
+                DefaultFilterEntity defaults = db.defaultFilterDao().getOrCreate();
+                FilterMatcher.Effective effective = FilterMatcher.resolve(filters, defaults, author, finalText);
 
-            boolean shouldTranslate = effective.translate && isEnglish;
-            if (shouldTranslate) {
-                ensureModelAndTranslate(finalText, translated ->
-                        persistAndNotify(author, finalText, translated, sourcePackage, effective, originalTap));
-            } else {
-                persistAndNotify(author, finalText, "", sourcePackage, effective, originalTap);
+                boolean shouldTranslate = effective.translate && isEnglish;
+                if (shouldTranslate) {
+                    // ML Kitのリスナーは既定でメインスレッドから呼ばれる。Roomはメインスレッドからの
+                    // アクセスを許さないため、必ずバックグラウンドスレッドへ戻してから保存する。
+                    ensureModelAndTranslate(finalText, translated ->
+                            AppExecutors.background(() -> persistAndNotifySafely(
+                                    author, finalText, translated, sourcePackage, effective, originalTap)));
+                } else {
+                    persistAndNotify(author, finalText, "", sourcePackage, effective, originalTap);
+                }
+            } catch (Exception e) {
+                logError("処理中の例外: " + e);
             }
         });
     }
@@ -115,6 +122,15 @@ public class XNotificationListener extends NotificationListenerService {
                                 .addOnFailureListener(e -> onResult.accept(""));
                     })
                     .addOnFailureListener(e -> onResult.accept(""));
+        }
+    }
+
+    private void persistAndNotifySafely(String author, String original, String translated, String sourcePackage,
+                                         FilterMatcher.Effective effective, PendingIntent originalTap) {
+        try {
+            persistAndNotify(author, original, translated, sourcePackage, effective, originalTap);
+        } catch (Exception e) {
+            logError("保存処理中の例外: " + e);
         }
     }
 
@@ -211,6 +227,20 @@ public class XNotificationListener extends NotificationListenerService {
         log.isXPackage = isXPackage;
         log.textFound = !text.isEmpty();
         log.textPreview = isXPackage ? text.substring(0, Math.min(text.length(), 60)) : "";
+        AppExecutors.background(() -> {
+            db.rawLogDao().insert(log);
+            db.rawLogDao().trimToRecent();
+        });
+    }
+
+    /** 診断用: 保存処理などで起きた例外を受信ログに残す。 */
+    private void logError(String message) {
+        RawLogEntity log = new RawLogEntity();
+        log.timestamp = System.currentTimeMillis();
+        log.packageName = "(内部エラー)";
+        log.isXPackage = true;
+        log.textFound = false;
+        log.textPreview = message.substring(0, Math.min(message.length(), 120));
         AppExecutors.background(() -> {
             db.rawLogDao().insert(log);
             db.rawLogDao().trimToRecent();
