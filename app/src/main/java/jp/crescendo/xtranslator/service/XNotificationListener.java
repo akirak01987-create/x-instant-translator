@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
@@ -201,7 +202,8 @@ public class XNotificationListener extends NotificationListenerService {
     }
 
     /** 本文の取得元を複数試す。通常の通知(EXTRA_TEXT/EXTRA_BIG_TEXT)に加え、
-     * InboxStyle等でまとめられた通知(EXTRA_TEXT_LINES)や、件名のみの通知(EXTRA_SUB_TEXT)も拾う。 */
+     * InboxStyle等でまとめられた通知(EXTRA_TEXT_LINES)、MessagingStyle通知(EXTRA_MESSAGES)、
+     * 件名のみの通知(EXTRA_SUB_TEXT)も拾う。取りこぼしを避けるため、可能な限り多くの形を試す。 */
     private String extractText(Bundle extras) {
         String text = string(extras.getCharSequence(Notification.EXTRA_BIG_TEXT));
         if (text.isEmpty()) text = string(extras.getCharSequence(Notification.EXTRA_TEXT));
@@ -219,8 +221,24 @@ public class XNotificationListener extends NotificationListenerService {
                 text = sb.toString();
             }
         }
+        if (text.isEmpty()) text = extractMessagingStyleText(extras);
         if (text.isEmpty()) text = string(extras.getCharSequence(Notification.EXTRA_SUB_TEXT));
         return text;
+    }
+
+    /** MessagingStyle(会話型)の通知は、実際の本文がEXTRA_TEXTではなくEXTRA_MESSAGESに
+     * 入っていることがある。最後のメッセージの本文を拾う。 */
+    private String extractMessagingStyleText(Bundle extras) {
+        try {
+            Parcelable[] messages = extras.getParcelableArray(Notification.EXTRA_MESSAGES);
+            if (messages == null || messages.length == 0) return "";
+            List<Notification.MessagingStyle.Message> parsed =
+                    Notification.MessagingStyle.Message.getMessagesFromBundleArray(messages);
+            if (parsed.isEmpty()) return "";
+            return string(parsed.get(parsed.size() - 1).getText());
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /** 診断用: 通知リスナーが実際に何を受信しているかを記録する。Xパッケージ以外は本文を保存しない。 */
@@ -256,6 +274,9 @@ public class XNotificationListener extends NotificationListenerService {
         return false;
     }
 
+    /** 翻訳を試みるかどうかの判定。日本語の投稿を英語として誤翻訳しないことより、
+     * 英語の投稿を「短いから」「日本語混じりだから」といった理由で翻訳し損ねないことを優先する。
+     * 以前は英字4文字以上を要求していたため、"Yes!"のような短い投稿が翻訳されずに漏れていた。 */
     private boolean looksEnglish(String value) {
         int latin = 0, japanese = 0;
         for (int i = 0; i < value.length(); i++) {
@@ -263,7 +284,7 @@ public class XNotificationListener extends NotificationListenerService {
             if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) latin++;
             if ((c >= 0x3040 && c <= 0x30ff) || (c >= 0x4e00 && c <= 0x9fff)) japanese++;
         }
-        return latin >= 4 && latin > japanese;
+        return latin > 0 && latin >= japanese;
     }
 
     private String string(CharSequence value) {

@@ -143,34 +143,5 @@
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"
-            android:background="#E0E0E0" />
-
-        <TextView
-            style="@style/SectionLabel"
-            android:layout_marginTop="0dp"
-            android:text="直近の受信ログ（診断用。Xの投稿本文以外は内容を記録しません）" />
-
-        <Button
-            android:id="@+id/btn_refresh_log"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="ログを更新"
-            android:textAllCaps="false" />
-
-        <TextView
-            android:id="@+id/text_raw_log"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:textColor="#424242"
-            android:textIsSelectable="true"
-            android:textSize="11sp" />
-
     </LinearLayout>
 </ScrollView>
