@@ -7,6 +7,13 @@
     android:orientation="vertical"
     android:padding="14dp">
 
+    <View
+        android:id="@+id/widget_single_accent"
+        android:layout_width="28dp"
+        android:layout_height="4dp"
+        android:layout_marginBottom="8dp"
+        android:background="#4FC3F7" />
+
     <TextView
         android:id="@+id/widget_single_title"
         android:layout_width="match_parent"

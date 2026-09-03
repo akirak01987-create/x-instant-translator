@@ -75,12 +75,12 @@ public final class WidgetUpdater {
         AppDatabase db = AppDatabase.getInstance(context);
         WidgetConfigEntity config = db.widgetConfigDao().getById(widgetId);
         String title = config != null && !TextUtils.isEmpty(config.title) ? config.title : "最新の通知";
-        long filterId = config != null ? config.filterId : WidgetConfigEntity.FILTER_ALL;
+        String filterIds = config != null ? config.filterIds : "";
 
         NotificationEntity latest = null;
         List<NotificationEntity> all = db.notificationDao().getAll();
         for (NotificationEntity item : all) {
-            if (WidgetFilter.matches(item, filterId)) {
+            if (WidgetFilter.matches(item, filterIds)) {
                 latest = item;
                 break;
             }
@@ -94,6 +94,7 @@ public final class WidgetUpdater {
             views.setTextViewText(R.id.widget_single_author,
                     TextUtils.isEmpty(latest.author) ? "投稿者不明" : latest.author);
             views.setTextViewText(R.id.widget_single_body, body);
+            views.setInt(R.id.widget_single_accent, "setBackgroundColor", latest.textColor);
             views.setViewVisibility(R.id.widget_single_empty, View.GONE);
             views.setViewVisibility(R.id.widget_single_author, View.VISIBLE);
             views.setViewVisibility(R.id.widget_single_body, View.VISIBLE);

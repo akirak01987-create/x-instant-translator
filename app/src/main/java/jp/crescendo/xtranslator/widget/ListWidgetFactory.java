@@ -38,12 +38,12 @@ class ListWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
     public void onDataSetChanged() {
         AppDatabase db = AppDatabase.getInstance(context);
         WidgetConfigEntity config = db.widgetConfigDao().getById(widgetId);
-        long filterId = config != null ? config.filterId : WidgetConfigEntity.FILTER_ALL;
+        String filterIds = config != null ? config.filterIds : "";
         int maxItems = config != null && config.maxItems > 0 ? config.maxItems : 20;
 
         items.clear();
         for (NotificationEntity item : db.notificationDao().getAll()) {
-            if (WidgetFilter.matches(item, filterId)) {
+            if (WidgetFilter.matches(item, filterIds)) {
                 items.add(item);
                 if (items.size() >= maxItems) break;
             }
@@ -70,6 +70,7 @@ class ListWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
 
         boolean hasTranslation = item.wasTranslated && !TextUtils.isEmpty(item.translatedText);
         views.setTextViewText(R.id.widget_item_body, hasTranslation ? item.translatedText : item.originalText);
+        views.setInt(R.id.widget_item_accent, "setBackgroundColor", item.textColor);
 
         Intent fillInIntent = new Intent();
         views.setOnClickFillInIntent(R.id.widget_item_body, fillInIntent);

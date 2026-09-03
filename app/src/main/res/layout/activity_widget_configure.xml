@@ -36,18 +36,22 @@
 
     <TextView
         style="@style/SectionLabel"
-        android:text="表示する通知(フィルター設定で絞り込み)" />
+        android:text="表示する通知(フィルター設定から複数選択可)" />
 
-    <Spinner
-        android:id="@+id/spinner_widget_filter"
+    <ListView
+        android:id="@+id/list_widget_filters"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="4dp"
+        android:divider="#E0E0E0"
+        android:dividerHeight="1dp" />
 
     <Button
         android:id="@+id/btn_widget_save"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:text="保存してウィジェットを追加"
         android:textAllCaps="false" />
 

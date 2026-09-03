@@ -8,12 +8,15 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import jp.crescendo.xtranslator.R;
 import jp.crescendo.xtranslator.data.AppDatabase;
@@ -22,12 +25,12 @@ import jp.crescendo.xtranslator.data.FilterEntity;
 import jp.crescendo.xtranslator.data.WidgetConfigEntity;
 import jp.crescendo.xtranslator.filter.FilterMatcher;
 
-/** 2種類のウィジェット(一覧/最新1件)に共通の設定画面。表示条件(フィルター選択)と見出しを設定する。 */
+/** 2種類のウィジェット(一覧/最新1件)に共通の設定画面。表示条件(フィルターの複数選択)と見出しを設定する。 */
 public class WidgetConfigureActivity extends AppCompatActivity {
     private int widgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private boolean isListWidget = true;
 
-    private Spinner filterSpinner;
+    private ListView filterList;
     private final List<Long> filterIds = new ArrayList<>();
     private final List<String> filterLabels = new ArrayList<>();
 
@@ -48,14 +51,15 @@ public class WidgetConfigureActivity extends AppCompatActivity {
         isListWidget = resolveIsListWidget();
 
         EditText titleField = findViewById(R.id.edit_widget_title);
-        filterSpinner = findViewById(R.id.spinner_widget_filter);
+        filterList = findViewById(R.id.list_widget_filters);
+        filterList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
         AppDatabase db = AppDatabase.getInstance(this);
         AppExecutors.background(() -> {
             List<FilterEntity> filters = db.filterDao().getAll();
             WidgetConfigEntity existing = db.widgetConfigDao().getById(widgetId);
             AppExecutors.main(() -> {
-                setupFilterSpinner(filters, existing != null ? existing.filterId : WidgetConfigEntity.FILTER_ALL);
+                setupFilterChecklist(filters, existing);
                 if (existing != null) {
                     titleField.setText(existing.title);
                 } else {
@@ -67,24 +71,39 @@ public class WidgetConfigureActivity extends AppCompatActivity {
         findViewById(R.id.btn_widget_save).setOnClickListener(v -> save(titleField));
     }
 
-    private void setupFilterSpinner(List<FilterEntity> filters, long selectedFilterId) {
+    private void setupFilterChecklist(List<FilterEntity> filters, WidgetConfigEntity existing) {
         filterIds.clear();
         filterLabels.clear();
-        filterIds.add(WidgetConfigEntity.FILTER_ALL);
-        filterLabels.add("すべての通知");
-        filterIds.add(WidgetConfigEntity.FILTER_DEFAULT_ONLY);
-        filterLabels.add("デフォルト設定が適用された通知のみ");
+        filterIds.add(FilterMatcher.DEFAULT_FILTER_ID);
+        filterLabels.add("デフォルト設定(どのフィルターにも一致しない投稿)");
         for (FilterEntity f : filters) {
             filterIds.add(f.id);
             filterLabels.add(FilterMatcher.describe(f));
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, filterLabels);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        filterSpinner.setAdapter(adapter);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_multiple_choice, filterLabels);
+        filterList.setAdapter(adapter);
 
-        int position = filterIds.indexOf(selectedFilterId);
-        filterSpinner.setSelection(position >= 0 ? position : 0);
+        // 未設定(新規追加時)はすべてチェック=すべての通知を対象にする。既存設定があれば保存済みのIDだけ復元する。
+        Set<Long> checked;
+        if (existing == null || TextUtils.isEmpty(existing.filterIds)) {
+            checked = new HashSet<>(filterIds);
+        } else {
+            checked = new HashSet<>();
+            for (String part : existing.filterIds.split(",")) {
+                String p = part.trim();
+                if (p.isEmpty()) continue;
+                try {
+                    checked.add(Long.parseLong(p));
+                } catch (NumberFormatException ignored) {
+                    // 無視
+                }
+            }
+        }
+        for (int i = 0; i < filterIds.size(); i++) {
+            filterList.setItemChecked(i, checked.contains(filterIds.get(i)));
+        }
     }
 
     private boolean resolveIsListWidget() {
@@ -97,14 +116,22 @@ public class WidgetConfigureActivity extends AppCompatActivity {
 
     private void save(EditText titleField) {
         String title = titleField.getText().toString().trim();
-        int position = filterSpinner.getSelectedItemPosition();
-        long selectedFilterId = position >= 0 && position < filterIds.size()
-                ? filterIds.get(position) : WidgetConfigEntity.FILTER_ALL;
+
+        StringBuilder csv = new StringBuilder();
+        for (int i = 0; i < filterIds.size(); i++) {
+            if (!filterList.isItemChecked(i)) continue;
+            if (csv.length() > 0) csv.append(",");
+            csv.append(filterIds.get(i));
+        }
+        if (csv.length() == 0) {
+            Toast.makeText(this, "表示する通知を少なくとも1つ選択してください", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         WidgetConfigEntity entity = new WidgetConfigEntity();
         entity.widgetId = widgetId;
         entity.title = TextUtils.isEmpty(title) ? (isListWidget ? "ウォッチリスト" : "最新の通知") : title;
-        entity.filterId = selectedFilterId;
+        entity.filterIds = csv.toString();
         entity.maxItems = 20;
 
         AppDatabase db = AppDatabase.getInstance(this);

@@ -1,18 +1,25 @@
 package jp.crescendo.xtranslator.widget;
 
-import jp.crescendo.xtranslator.data.NotificationEntity;
-import jp.crescendo.xtranslator.data.WidgetConfigEntity;
-import jp.crescendo.xtranslator.filter.FilterMatcher;
+import android.text.TextUtils;
 
-/** ウィジェットに表示する通知を、保存時に一致したフィルター(filterId)で絞り込む。 */
+import jp.crescendo.xtranslator.data.NotificationEntity;
+
+/** ウィジェットに表示する通知を、保存時に一致したフィルター(filterId)の複数選択で絞り込む。 */
 public final class WidgetFilter {
     private WidgetFilter() {}
 
-    public static boolean matches(NotificationEntity item, long widgetFilterId) {
-        if (widgetFilterId == WidgetConfigEntity.FILTER_ALL) return true;
-        if (widgetFilterId == WidgetConfigEntity.FILTER_DEFAULT_ONLY) {
-            return item.filterId == FilterMatcher.DEFAULT_FILTER_ID;
+    /** filterIdsCsvはカンマ区切りのフィルターID一覧。空/nullなら常にすべて対象とする。 */
+    public static boolean matches(NotificationEntity item, String filterIdsCsv) {
+        if (TextUtils.isEmpty(filterIdsCsv)) return true;
+        for (String part : filterIdsCsv.split(",")) {
+            String p = part.trim();
+            if (p.isEmpty()) continue;
+            try {
+                if (Long.parseLong(p) == item.filterId) return true;
+            } catch (NumberFormatException ignored) {
+                // 壊れた値は無視する
+            }
         }
-        return item.filterId == widgetFilterId;
+        return false;
     }
 }
