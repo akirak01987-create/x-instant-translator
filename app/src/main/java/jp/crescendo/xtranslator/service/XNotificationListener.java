@@ -90,6 +90,14 @@ public class XNotificationListener extends NotificationListenerService {
             cancelNotification(sbn.getKey());
         }
 
+        if (isRedactedByOs(text)) {
+            // Android側(画面共有中の機密保護機能など)によって本文が「プライベートな通知内容は
+            // 表示されません」に伏せられた通知。実際の投稿内容はこのアプリを含むどの通知リスナーにも
+            // 渡されないため、キーワード判定・翻訳のしようがない。ノイズになるだけの履歴を残さず、
+            // ここで処理を打ち切る。
+            return;
+        }
+
         String author = title;
         String dedupeKey = dedupeKey(author, text);
 
@@ -279,6 +287,13 @@ public class XNotificationListener extends NotificationListenerService {
             db.rawLogDao().insert(log);
             db.rawLogDao().trimToRecent();
         });
+    }
+
+    /** 画面共有・録画中の機密保護機能などにより、Android自体が通知本文を伏せ字プレースホルダーに
+     * 差し替えている場合を検出する。この場合、本当の投稿内容はOSレベルでどの通知リスナーからも
+     * 見えなくなっており、アプリ側で復元する手段はない。 */
+    private boolean isRedactedByOs(String text) {
+        return text.contains("通知内容は表示されません");
     }
 
     private boolean isX(String pkg) {
