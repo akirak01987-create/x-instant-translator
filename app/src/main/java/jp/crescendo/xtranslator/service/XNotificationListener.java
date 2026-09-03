@@ -158,10 +158,12 @@ public class XNotificationListener extends NotificationListenerService {
 
         if (effective.popup) {
             postSystemNotification(insertedId, author, original, entity.translatedText, effective, originalTap, sourcePackage);
-            if (Prefs.isHideOriginalNotificationEnabled(this) && originalKey != null) {
-                // 翻訳したポップアップを出す代わりに、Xの元通知(英語)は消して二重表示を防ぐ。
-                cancelNotification(originalKey);
-            }
+        }
+        // 「Xの元の通知を自動的に消す」は、このアプリ側のポップアップ表示設定(フィルターごと)とは
+        // 独立した設定。以前はeffective.popupがfalseの場合(フィルターでポップアップを切っている場合)に
+        // Xの元通知を消す処理自体もスキップされてしまい、結果的にXの生の英語通知が表示され続けていた。
+        if (Prefs.isHideOriginalNotificationEnabled(this) && originalKey != null) {
+            cancelNotification(originalKey);
         }
 
         WidgetUpdater.updateAll(this);
