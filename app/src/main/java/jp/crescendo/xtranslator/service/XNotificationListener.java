@@ -20,6 +20,9 @@ import com.google.mlkit.nl.translate.TranslatorOptions;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import jp.crescendo.xtranslator.data.AppDatabase;
 import jp.crescendo.xtranslator.data.AppExecutors;
@@ -34,6 +37,9 @@ import jp.crescendo.xtranslator.widget.WidgetUpdater;
 
 public class XNotificationListener extends NotificationListenerService {
     private static final String[] X_PACKAGES = {"com.twitter.android", "com.twitter.android.lite"};
+    /** 翻訳モデルのダウンロード・翻訳呼び出し1回あたりの上限。ここで頭打ちにしないと、
+     * ネットワーク不調時にキューが詰まり、翻訳が不要な後続の通知まで巻き添えで遅延してしまう。 */
+    private static final long TRANSLATE_TIMEOUT_SECONDS = 15;
 
     /** onNotificationPosted の高頻度な再送を無駄なDBアクセスにしないための短期キャッシュ。永続的な重複防止はDBのユニーク制約で行う。 */
     private final Map<String, Long> recentlySeen = new LinkedHashMap<String, Long>() {
@@ -42,6 +48,11 @@ public class XNotificationListener extends NotificationListenerService {
             return size() > 200;
         }
     };
+
+    /** 通知処理専用のスレッド。履歴画面のポーリングやウィジェット更新など、アプリの他のバックグラウンド
+     * 処理(AppExecutors.background)と同じキューを共有すると、片方が詰まった際に通知の受信・翻訳・保存
+     * まで巻き添えで遅延してしまうため、通知処理はここだけ独立させている。 */
+    private final ExecutorService notificationExecutor = Executors.newSingleThreadExecutor();
 
     private Translator translator;
     private volatile boolean modelReady;
@@ -89,7 +100,7 @@ public class XNotificationListener extends NotificationListenerService {
         String finalText = text;
         String originalKey = sbn.getKey();
 
-        AppExecutors.background(() -> {
+        notificationExecutor.execute(() -> {
             try {
                 List<FilterEntity> filters = db.filterDao().getAll();
                 DefaultFilterEntity defaults = db.defaultFilterDao().getOrCreate();
@@ -111,10 +122,12 @@ public class XNotificationListener extends NotificationListenerService {
         try {
             if (!modelReady) {
                 com.google.android.gms.tasks.Tasks.await(
-                        translator.downloadModelIfNeeded(new DownloadConditions.Builder().build()));
+                        translator.downloadModelIfNeeded(new DownloadConditions.Builder().build()),
+                        TRANSLATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                 modelReady = true;
             }
-            return com.google.android.gms.tasks.Tasks.await(translator.translate(text));
+            return com.google.android.gms.tasks.Tasks.await(
+                    translator.translate(text), TRANSLATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (Exception e) {
             logError("翻訳中の例外: " + e);
             return "";
@@ -300,6 +313,7 @@ public class XNotificationListener extends NotificationListenerService {
     @Override
     public void onDestroy() {
         if (translator != null) translator.close();
+        notificationExecutor.shutdown();
         super.onDestroy();
     }
 }
