@@ -56,15 +56,20 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
         holder.meta.setText(dateFormat.format(item.receivedAt) + "　" +
                 (TextUtils.isEmpty(item.author) ? "投稿者不明" : item.author));
-        holder.original.setText(item.originalText);
-        holder.original.setTextColor(item.textColor);
 
-        if (item.wasTranslated && !TextUtils.isEmpty(item.translatedText)) {
+        boolean hasTranslation = item.wasTranslated && !TextUtils.isEmpty(item.translatedText);
+        if (hasTranslation) {
+            // 翻訳文だけを表示する。原文は元のX投稿を開けば確認できる。
+            holder.original.setVisibility(View.GONE);
             holder.translated.setVisibility(View.VISIBLE);
             holder.translated.setText(item.translatedText);
             holder.translated.setTextColor(item.textColor);
         } else {
+            // 翻訳がない場合(日本語の投稿や翻訳オフのフィルターなど)は原文を表示する。
             holder.translated.setVisibility(View.GONE);
+            holder.original.setVisibility(View.VISIBLE);
+            holder.original.setText(item.originalText);
+            holder.original.setTextColor(item.textColor);
         }
 
         holder.filterTag.setText("適用フィルター: " + item.filterName);
