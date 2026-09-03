@@ -38,12 +38,12 @@ class ListWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
     public void onDataSetChanged() {
         AppDatabase db = AppDatabase.getInstance(context);
         WidgetConfigEntity config = db.widgetConfigDao().getById(widgetId);
-        String keyword = config != null ? config.keyword : "";
+        long filterId = config != null ? config.filterId : WidgetConfigEntity.FILTER_ALL;
         int maxItems = config != null && config.maxItems > 0 ? config.maxItems : 20;
 
         items.clear();
         for (NotificationEntity item : db.notificationDao().getAll()) {
-            if (WidgetFilter.matches(item, keyword)) {
+            if (WidgetFilter.matches(item, filterId)) {
                 items.add(item);
                 if (items.size() >= maxItems) break;
             }

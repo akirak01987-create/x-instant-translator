@@ -1,6 +1,5 @@
 package jp.crescendo.xtranslator.ui;
 
-import android.graphics.drawable.GradientDrawable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
@@ -72,10 +72,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             holder.original.setTextColor(item.textColor);
         }
 
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(item.backgroundColor);
-        bg.setCornerRadius(dp(holder.itemView, 10));
-        holder.cardContent.setBackground(bg);
+        holder.cardRoot.setCardBackgroundColor(item.backgroundColor);
+        holder.accentStripe.setBackgroundColor(item.textColor);
 
         holder.itemView.setOnClickListener(v -> listener.onOpen(item));
         holder.deleteButton.setOnClickListener(v -> listener.onDelete(item));
@@ -86,12 +84,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         return items.size();
     }
 
-    private static float dp(View view, int value) {
-        return value * view.getResources().getDisplayMetrics().density;
-    }
-
     static class ViewHolder extends RecyclerView.ViewHolder {
-        final View cardContent;
+        final CardView cardRoot;
+        final View accentStripe;
         final TextView meta;
         final TextView original;
         final TextView translated;
@@ -99,7 +94,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardContent = itemView.findViewById(R.id.card_content);
+            cardRoot = (CardView) itemView;
+            accentStripe = itemView.findViewById(R.id.accent_stripe);
             meta = itemView.findViewById(R.id.text_meta);
             original = itemView.findViewById(R.id.text_original);
             translated = itemView.findViewById(R.id.text_translated);

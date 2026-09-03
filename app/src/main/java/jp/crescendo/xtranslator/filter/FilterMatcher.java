@@ -15,7 +15,11 @@ public final class FilterMatcher {
 
     private FilterMatcher() {}
 
+    /** どのフィルターにも一致しなかった(デフォルト設定が適用された)ことを表すfilterId。 */
+    public static final long DEFAULT_FILTER_ID = 0;
+
     public static class Effective {
+        public long filterId;
         public String filterName;
         public boolean translate;
         public boolean popup;
@@ -30,6 +34,7 @@ public final class FilterMatcher {
             if (!f.enabled) continue;
             if (matches(f, author, text)) {
                 Effective e = new Effective();
+                e.filterId = f.id;
                 e.filterName = describe(f);
                 e.translate = f.translateEnabled;
                 e.popup = f.popupEnabled;
@@ -40,6 +45,7 @@ public final class FilterMatcher {
             }
         }
         Effective e = new Effective();
+        e.filterId = DEFAULT_FILTER_ID;
         e.filterName = DEFAULT_FILTER_NAME;
         if (defaults != null) {
             e.translate = defaults.translateEnabled;

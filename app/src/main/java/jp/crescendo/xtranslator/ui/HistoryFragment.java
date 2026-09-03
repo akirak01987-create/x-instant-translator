@@ -39,8 +39,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
 
     private HistoryAdapter adapter;
     private TextView emptyText;
-    private Button btnTimeFrom;
-    private Button btnTimeTo;
+    private Button btnTimeFilter;
 
     private List<NotificationEntity> allItems = new ArrayList<>();
     private List<Long> lastSubmittedIds = new ArrayList<>();
@@ -72,14 +71,10 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
         recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         recycler.setAdapter(adapter);
         emptyText = view.findViewById(R.id.text_empty);
-        btnTimeFrom = view.findViewById(R.id.btn_time_from);
-        btnTimeTo = view.findViewById(R.id.btn_time_to);
+        btnTimeFilter = view.findViewById(R.id.btn_time_filter);
 
         view.findViewById(R.id.btn_clear_all).setOnClickListener(v -> confirmClearAll());
-        btnTimeFrom.setOnClickListener(v -> pickTime(true));
-        btnTimeTo.setOnClickListener(v -> pickTime(false));
-        view.findViewById(R.id.btn_time_search).setOnClickListener(v -> applyFilterAndSubmit());
-        view.findViewById(R.id.btn_time_clear).setOnClickListener(v -> clearTimeFilter());
+        btnTimeFilter.setOnClickListener(v -> showTimeFilterDialog());
     }
 
     @Override
@@ -108,29 +103,67 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
         });
     }
 
-    private void pickTime(boolean isStart) {
-        Integer current = isStart ? filterStartMinutes : filterEndMinutes;
-        int initHour = current != null ? current / 60 : 9;
-        int initMinute = current != null ? current % 60 : 0;
-        new TimePickerDialog(requireContext(), (view, hourOfDay, minute) -> {
-            int totalMinutes = hourOfDay * 60 + minute;
-            String formatted = String.format(Locale.JAPAN, "%02d:%02d", hourOfDay, minute);
-            if (isStart) {
-                filterStartMinutes = totalMinutes;
-                btnTimeFrom.setText(formatted);
-            } else {
-                filterEndMinutes = totalMinutes;
-                btnTimeTo.setText(formatted);
-            }
-        }, initHour, initMinute, true).show();
+    /** 「時間で絞り込み」ボタンから開く別画面(ダイアログ)。現在の絞り込み状態をコピーして編集し、
+     * 「この条件で検索」でフラグメント側の状態へ反映する。 */
+    private void showTimeFilterDialog() {
+        View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_time_filter, null);
+        Button dialogFrom = view.findViewById(R.id.btn_time_from);
+        Button dialogTo = view.findViewById(R.id.btn_time_to);
+
+        Integer[] pendingStart = {filterStartMinutes};
+        Integer[] pendingEnd = {filterEndMinutes};
+        dialogFrom.setText(formatMinutes(pendingStart[0], "開始時刻"));
+        dialogTo.setText(formatMinutes(pendingEnd[0], "終了時刻"));
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext()).setView(view).create();
+
+        dialogFrom.setOnClickListener(v -> pickTime(pendingStart[0], minutes -> {
+            pendingStart[0] = minutes;
+            dialogFrom.setText(formatMinutes(minutes, "開始時刻"));
+        }));
+        dialogTo.setOnClickListener(v -> pickTime(pendingEnd[0], minutes -> {
+            pendingEnd[0] = minutes;
+            dialogTo.setText(formatMinutes(minutes, "終了時刻"));
+        }));
+        view.findViewById(R.id.btn_time_apply).setOnClickListener(v -> {
+            filterStartMinutes = pendingStart[0];
+            filterEndMinutes = pendingEnd[0];
+            updateTimeFilterButtonLabel();
+            applyFilterAndSubmit();
+            dialog.dismiss();
+        });
+        view.findViewById(R.id.btn_time_clear).setOnClickListener(v -> {
+            filterStartMinutes = null;
+            filterEndMinutes = null;
+            updateTimeFilterButtonLabel();
+            applyFilterAndSubmit();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
-    private void clearTimeFilter() {
-        filterStartMinutes = null;
-        filterEndMinutes = null;
-        btnTimeFrom.setText("開始時刻");
-        btnTimeTo.setText("終了時刻");
-        applyFilterAndSubmit();
+    private interface OnMinutesPicked {
+        void onPicked(int minutes);
+    }
+
+    private void pickTime(Integer current, OnMinutesPicked callback) {
+        int initHour = current != null ? current / 60 : 9;
+        int initMinute = current != null ? current % 60 : 0;
+        new TimePickerDialog(requireContext(), (view, hourOfDay, minute) ->
+                callback.onPicked(hourOfDay * 60 + minute), initHour, initMinute, true).show();
+    }
+
+    private static String formatMinutes(Integer minutes, String placeholder) {
+        return minutes == null ? placeholder : String.format(Locale.JAPAN, "%02d:%02d", minutes / 60, minutes % 60);
+    }
+
+    private void updateTimeFilterButtonLabel() {
+        if (filterStartMinutes == null || filterEndMinutes == null) {
+            btnTimeFilter.setText("⏱ 時間で絞り込み");
+        } else {
+            btnTimeFilter.setText("⏱ " + formatMinutes(filterStartMinutes, "") + "〜" + formatMinutes(filterEndMinutes, ""));
+        }
     }
 
     private void applyFilterAndSubmit() {

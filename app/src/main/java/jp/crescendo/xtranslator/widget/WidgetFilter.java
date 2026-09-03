@@ -1,26 +1,18 @@
 package jp.crescendo.xtranslator.widget;
 
-import android.text.TextUtils;
-
-import java.util.Locale;
-
 import jp.crescendo.xtranslator.data.NotificationEntity;
+import jp.crescendo.xtranslator.data.WidgetConfigEntity;
+import jp.crescendo.xtranslator.filter.FilterMatcher;
 
-/** ウィジェットに表示する通知の絞り込み。投稿者名または本文にキーワードが部分一致するかを見る。 */
+/** ウィジェットに表示する通知を、保存時に一致したフィルター(filterId)で絞り込む。 */
 public final class WidgetFilter {
     private WidgetFilter() {}
 
-    public static boolean matches(NotificationEntity item, String keyword) {
-        if (TextUtils.isEmpty(keyword)) return true;
-        String needle = keyword.trim().toLowerCase(Locale.getDefault());
-        if (needle.isEmpty()) return true;
-
-        return contains(item.author, needle)
-                || contains(item.translatedText, needle)
-                || contains(item.originalText, needle);
-    }
-
-    private static boolean contains(String value, String needleLower) {
-        return value != null && value.toLowerCase(Locale.getDefault()).contains(needleLower);
+    public static boolean matches(NotificationEntity item, long widgetFilterId) {
+        if (widgetFilterId == WidgetConfigEntity.FILTER_ALL) return true;
+        if (widgetFilterId == WidgetConfigEntity.FILTER_DEFAULT_ONLY) {
+            return item.filterId == FilterMatcher.DEFAULT_FILTER_ID;
+        }
+        return item.filterId == widgetFilterId;
     }
 }

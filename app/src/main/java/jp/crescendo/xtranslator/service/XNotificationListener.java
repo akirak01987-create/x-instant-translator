@@ -142,6 +142,7 @@ public class XNotificationListener extends NotificationListenerService {
         entity.sourcePackage = sourcePackage;
         entity.textColor = effective.textColor;
         entity.backgroundColor = effective.backgroundColor;
+        entity.filterId = effective.filterId;
         entity.filterName = effective.filterName;
         entity.popupShown = effective.popup;
         entity.soundPlayed = effective.popup && effective.sound;

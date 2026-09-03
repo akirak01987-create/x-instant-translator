@@ -75,12 +75,12 @@ public final class WidgetUpdater {
         AppDatabase db = AppDatabase.getInstance(context);
         WidgetConfigEntity config = db.widgetConfigDao().getById(widgetId);
         String title = config != null && !TextUtils.isEmpty(config.title) ? config.title : "最新の通知";
-        String keyword = config != null ? config.keyword : "";
+        long filterId = config != null ? config.filterId : WidgetConfigEntity.FILTER_ALL;
 
         NotificationEntity latest = null;
         List<NotificationEntity> all = db.notificationDao().getAll();
         for (NotificationEntity item : all) {
-            if (WidgetFilter.matches(item, keyword)) {
+            if (WidgetFilter.matches(item, filterId)) {
                 latest = item;
                 break;
             }

@@ -36,14 +36,12 @@
 
     <TextView
         style="@style/SectionLabel"
-        android:text="絞り込みキーワード(投稿者名または本文の一部)" />
+        android:text="表示する通知(フィルター設定で絞り込み)" />
 
-    <EditText
-        android:id="@+id/edit_widget_keyword"
+    <Spinner
+        android:id="@+id/spinner_widget_filter"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="空欄なら全ての通知を表示"
-        android:inputType="text" />
+        android:layout_height="wrap_content" />
 
     <Button
         android:id="@+id/btn_widget_save"
