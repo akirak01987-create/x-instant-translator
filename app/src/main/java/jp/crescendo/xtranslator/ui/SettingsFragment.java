@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +42,7 @@ public class SettingsFragment extends Fragment {
     private TextView historyCountText;
     private TextView rawLogText;
     private EditText editRetentionMinutes;
+    private Switch switchHideOriginal;
 
     @Nullable
     @Override
@@ -57,6 +59,10 @@ public class SettingsFragment extends Fragment {
         historyCountText = view.findViewById(R.id.text_history_count);
         rawLogText = view.findViewById(R.id.text_raw_log);
         editRetentionMinutes = view.findViewById(R.id.edit_retention_minutes);
+        switchHideOriginal = view.findViewById(R.id.switch_hide_original);
+        switchHideOriginal.setChecked(Prefs.isHideOriginalNotificationEnabled(requireContext()));
+        switchHideOriginal.setOnCheckedChangeListener((btn, checked) ->
+                Prefs.setHideOriginalNotificationEnabled(requireContext(), checked));
 
         view.findViewById(R.id.btn_grant_access).setOnClickListener(v ->
                 startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)));

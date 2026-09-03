@@ -67,6 +67,40 @@
             android:layout_marginBottom="16dp"
             android:background="#E0E0E0" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Xの元の通知を自動的に消す"
+                android:textSize="15sp" />
+
+            <Switch
+                android:id="@+id/switch_hide_original"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="オンにすると、翻訳のポップアップを表示するタイミングでXアプリ側の元の通知(英語)を消して、二重に表示されないようにします。ポップアップを表示しないフィルターの投稿には影響しません。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0" />
+
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"

@@ -86,6 +86,7 @@ public class XNotificationListener extends NotificationListenerService {
         PendingIntent originalTap = sbn.getNotification().contentIntent;
         String sourcePackage = packageName;
         String finalText = text;
+        String originalKey = sbn.getKey();
 
         AppExecutors.background(() -> {
             try {
@@ -95,7 +96,7 @@ public class XNotificationListener extends NotificationListenerService {
 
                 boolean shouldTranslate = effective.translate && isEnglish;
                 String translated = shouldTranslate ? translateBlocking(finalText) : "";
-                persistAndNotifySafely(author, finalText, translated, sourcePackage, effective, originalTap);
+                persistAndNotifySafely(author, finalText, translated, sourcePackage, effective, originalTap, originalKey);
             } catch (Exception e) {
                 logError("処理中の例外: " + e);
             }
@@ -120,9 +121,9 @@ public class XNotificationListener extends NotificationListenerService {
     }
 
     private void persistAndNotifySafely(String author, String original, String translated, String sourcePackage,
-                                         FilterMatcher.Effective effective, PendingIntent originalTap) {
+                                         FilterMatcher.Effective effective, PendingIntent originalTap, String originalKey) {
         try {
-            persistAndNotify(author, original, translated, sourcePackage, effective, originalTap);
+            persistAndNotify(author, original, translated, sourcePackage, effective, originalTap, originalKey);
         } catch (Exception e) {
             logError("保存処理中の例外: " + e);
         }
@@ -130,7 +131,7 @@ public class XNotificationListener extends NotificationListenerService {
 
     /** バックグラウンドスレッドから呼び出される。DB保存・上限トリム・ポップアップ表示までを行う。 */
     private void persistAndNotify(String author, String original, String translated, String sourcePackage,
-                                   FilterMatcher.Effective effective, PendingIntent originalTap) {
+                                   FilterMatcher.Effective effective, PendingIntent originalTap, String originalKey) {
         NotificationEntity entity = new NotificationEntity();
         entity.dedupeKey = dedupeKey(author, original);
         entity.receivedAt = System.currentTimeMillis();
@@ -156,6 +157,10 @@ public class XNotificationListener extends NotificationListenerService {
 
         if (effective.popup) {
             postSystemNotification(insertedId, author, original, entity.translatedText, effective, originalTap, sourcePackage);
+            if (Prefs.isHideOriginalNotificationEnabled(this) && originalKey != null) {
+                // 翻訳したポップアップを出す代わりに、Xの元通知(英語)は消して二重表示を防ぐ。
+                cancelNotification(originalKey);
+            }
         }
 
         WidgetUpdater.updateAll(this);
