@@ -24,6 +24,7 @@ import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.FilterEntity;
 import jp.crescendo.xtranslator.data.WidgetConfigEntity;
 import jp.crescendo.xtranslator.filter.FilterMatcher;
+import jp.crescendo.xtranslator.util.InsetsUtil;
 
 /** 2種類のウィジェット(一覧/最新1件)に共通の設定画面。表示条件(フィルターの複数選択)と見出しを設定する。 */
 public class WidgetConfigureActivity extends AppCompatActivity {
@@ -39,6 +40,7 @@ public class WidgetConfigureActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setResult(RESULT_CANCELED);
         setContentView(R.layout.activity_widget_configure);
+        InsetsUtil.applySystemBarPadding(findViewById(R.id.widget_configure_root), true, true);
 
         Intent intent = getIntent();
         if (intent != null && intent.getExtras() != null) {

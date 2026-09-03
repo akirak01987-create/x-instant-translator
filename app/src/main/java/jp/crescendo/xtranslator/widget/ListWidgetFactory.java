@@ -3,6 +3,7 @@ package jp.crescendo.xtranslator.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -36,17 +37,24 @@ class ListWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public void onDataSetChanged() {
-        AppDatabase db = AppDatabase.getInstance(context);
-        WidgetConfigEntity config = db.widgetConfigDao().getById(widgetId);
-        String filterIds = config != null ? config.filterIds : "";
-        int maxItems = config != null && config.maxItems > 0 ? config.maxItems : 20;
-
         items.clear();
-        for (NotificationEntity item : db.notificationDao().getAll()) {
-            if (WidgetFilter.matches(item, filterIds)) {
-                items.add(item);
-                if (items.size() >= maxItems) break;
+        try {
+            AppDatabase db = AppDatabase.getInstance(context);
+            WidgetConfigEntity config = db.widgetConfigDao().getById(widgetId);
+            String filterIds = config != null ? config.filterIds : "";
+            int maxItems = config != null && config.maxItems > 0 ? config.maxItems : 20;
+
+            for (NotificationEntity item : db.notificationDao().getAll()) {
+                if (WidgetFilter.matches(item, filterIds)) {
+                    items.add(item);
+                    if (items.size() >= maxItems) break;
+                }
             }
+        } catch (Exception e) {
+            // データ読み込みに失敗しても、ウィジェット全体を「読み込みエラー」にしない。
+            // 空一覧のまま(空状態の表示)にフォールバックする。
+            Log.e("ListWidgetFactory", "onDataSetChanged failed for widgetId=" + widgetId, e);
+            items.clear();
         }
     }
 
@@ -62,19 +70,27 @@ class ListWidgetFactory implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public RemoteViews getViewAt(int position) {
-        NotificationEntity item = items.get(position);
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_list_item);
+        try {
+            NotificationEntity item = items.get(position);
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_list_item);
 
-        String author = TextUtils.isEmpty(item.author) ? "投稿者不明" : item.author;
-        views.setTextViewText(R.id.widget_item_meta, timeFormat.format(item.receivedAt) + "　" + author);
+            String author = TextUtils.isEmpty(item.author) ? "投稿者不明" : item.author;
+            views.setTextViewText(R.id.widget_item_meta, timeFormat.format(item.receivedAt) + "　" + author);
 
-        boolean hasTranslation = item.wasTranslated && !TextUtils.isEmpty(item.translatedText);
-        views.setTextViewText(R.id.widget_item_body, hasTranslation ? item.translatedText : item.originalText);
-        views.setInt(R.id.widget_item_accent, "setBackgroundColor", item.textColor);
+            boolean hasTranslation = item.wasTranslated && !TextUtils.isEmpty(item.translatedText);
+            views.setTextViewText(R.id.widget_item_body, hasTranslation ? item.translatedText : item.originalText);
+            views.setInt(R.id.widget_item_accent, "setBackgroundColor", item.textColor);
 
-        Intent fillInIntent = new Intent();
-        views.setOnClickFillInIntent(R.id.widget_item_body, fillInIntent);
-        return views;
+            Intent fillInIntent = new Intent();
+            views.setOnClickFillInIntent(R.id.widget_item_body, fillInIntent);
+            return views;
+        } catch (Exception e) {
+            // 1件の描画に失敗しても一覧全体を巻き添えにしない。
+            Log.e("ListWidgetFactory", "getViewAt failed for widgetId=" + widgetId + " position=" + position, e);
+            RemoteViews fallback = new RemoteViews(context.getPackageName(), R.layout.widget_list_item);
+            fallback.setTextViewText(R.id.widget_item_body, "");
+            return fallback;
+        }
     }
 
     @Override
