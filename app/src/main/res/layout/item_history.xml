@@ -64,14 +64,6 @@
             android:layout_marginTop="4dp"
             android:textSize="15sp"
             android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/text_filter_tag"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="#9E9E9E"
-            android:textSize="11sp" />
     </LinearLayout>
 
     <ImageButton

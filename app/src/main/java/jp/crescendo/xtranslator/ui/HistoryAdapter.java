@@ -72,8 +72,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             holder.original.setTextColor(item.textColor);
         }
 
-        holder.filterTag.setText("適用フィルター: " + item.filterName);
-
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(item.backgroundColor);
         bg.setCornerRadius(dp(holder.itemView, 10));
@@ -97,7 +95,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         final TextView meta;
         final TextView original;
         final TextView translated;
-        final TextView filterTag;
         final View deleteButton;
 
         ViewHolder(@NonNull View itemView) {
@@ -106,7 +103,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             meta = itemView.findViewById(R.id.text_meta);
             original = itemView.findViewById(R.id.text_original);
             translated = itemView.findViewById(R.id.text_translated);
-            filterTag = itemView.findViewById(R.id.text_filter_tag);
             deleteButton = itemView.findViewById(R.id.btn_delete);
         }
     }
