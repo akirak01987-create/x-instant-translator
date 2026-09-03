@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1C1C1E"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/widget_list_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="6dp"
+        android:text="ウォッチリスト"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ListView
+            android:id="@+id/widget_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="#33FFFFFF"
+            android:dividerHeight="1dp"
+            android:listSelector="@android:color/transparent" />
+
+        <TextView
+            android:id="@+id/widget_list_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="該当する通知はまだありません"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+    </FrameLayout>
+
+</LinearLayout>

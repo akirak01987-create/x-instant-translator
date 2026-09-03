@@ -32,6 +32,7 @@ import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.NotificationEntity;
 import jp.crescendo.xtranslator.data.Prefs;
 import jp.crescendo.xtranslator.util.PendingIntentCache;
+import jp.crescendo.xtranslator.widget.WidgetUpdater;
 
 public class HistoryFragment extends Fragment implements HistoryAdapter.Listener {
     private static final long POLL_INTERVAL_MS = 3000;
@@ -170,6 +171,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
                     AppDatabase db = AppDatabase.getInstance(requireContext());
                     AppExecutors.background(() -> {
                         db.notificationDao().deleteAll();
+                        WidgetUpdater.updateAll(requireContext().getApplicationContext());
                         AppExecutors.main(this::reload);
                     });
                 })
@@ -203,6 +205,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
         AppDatabase db = AppDatabase.getInstance(requireContext());
         AppExecutors.background(() -> {
             db.notificationDao().deleteById(item.id);
+            WidgetUpdater.updateAll(requireContext().getApplicationContext());
             AppExecutors.main(this::reload);
         });
     }

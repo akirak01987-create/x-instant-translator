@@ -6,7 +6,7 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {NotificationEntity.class, FilterEntity.class, DefaultFilterEntity.class, RawLogEntity.class}, version = 3, exportSchema = false)
+@Database(entities = {NotificationEntity.class, FilterEntity.class, DefaultFilterEntity.class, RawLogEntity.class, WidgetConfigEntity.class}, version = 4, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract NotificationDao notificationDao();
 
@@ -15,6 +15,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract DefaultFilterDao defaultFilterDao();
 
     public abstract RawLogDao rawLogDao();
+
+    public abstract WidgetConfigDao widgetConfigDao();
 
     private static volatile AppDatabase instance;
 

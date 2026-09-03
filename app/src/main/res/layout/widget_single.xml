@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_single_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1C1C1E"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/widget_single_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="最新の通知"
+        android:textColor="#9E9E9E"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/widget_single_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textColor="#4FC3F7"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_single_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:maxLines="4"
+        android:ellipsize="end"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_single_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="該当する通知はまだありません"
+        android:textColor="#9E9E9E"
+        android:textSize="13sp" />
+
+</LinearLayout>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ウィジェット設定"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="このウィジェットに表示する通知の条件を設定してください。"
+        android:textColor="#616161"
+        android:textSize="13sp" />
+
+    <TextView
+        style="@style/SectionLabel"
+        android:text="見出し" />
+
+    <EditText
+        android:id="@+id/edit_widget_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="例: 重要アカウント"
+        android:inputType="text" />
+
+    <TextView
+        style="@style/SectionLabel"
+        android:text="絞り込みキーワード(投稿者名または本文の一部)" />
+
+    <EditText
+        android:id="@+id/edit_widget_keyword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="空欄なら全ての通知を表示"
+        android:inputType="text" />
+
+    <Button
+        android:id="@+id/btn_widget_save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="保存してウィジェットを追加"
+        android:textAllCaps="false" />
+
+</LinearLayout>

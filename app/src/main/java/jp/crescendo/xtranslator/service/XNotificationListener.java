@@ -29,6 +29,7 @@ import jp.crescendo.xtranslator.data.Prefs;
 import jp.crescendo.xtranslator.data.RawLogEntity;
 import jp.crescendo.xtranslator.filter.FilterMatcher;
 import jp.crescendo.xtranslator.util.PendingIntentCache;
+import jp.crescendo.xtranslator.widget.WidgetUpdater;
 
 public class XNotificationListener extends NotificationListenerService {
     private static final String[] X_PACKAGES = {"com.twitter.android", "com.twitter.android.lite"};
@@ -163,6 +164,8 @@ public class XNotificationListener extends NotificationListenerService {
         if (effective.popup) {
             postSystemNotification(insertedId, author, original, entity.translatedText, effective, originalTap, sourcePackage);
         }
+
+        WidgetUpdater.updateAll(this);
     }
 
     private void postSystemNotification(long historyId, String author, String original, String translated,
