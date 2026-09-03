@@ -94,35 +94,28 @@ public class XNotificationListener extends NotificationListenerService {
                 FilterMatcher.Effective effective = FilterMatcher.resolve(filters, defaults, author, finalText);
 
                 boolean shouldTranslate = effective.translate && isEnglish;
-                if (shouldTranslate) {
-                    // ML Kitのリスナーは既定でメインスレッドから呼ばれる。Roomはメインスレッドからの
-                    // アクセスを許さないため、必ずバックグラウンドスレッドへ戻してから保存する。
-                    ensureModelAndTranslate(finalText, translated ->
-                            AppExecutors.background(() -> persistAndNotifySafely(
-                                    author, finalText, translated, sourcePackage, effective, originalTap)));
-                } else {
-                    persistAndNotify(author, finalText, "", sourcePackage, effective, originalTap);
-                }
+                String translated = shouldTranslate ? translateBlocking(finalText) : "";
+                persistAndNotifySafely(author, finalText, translated, sourcePackage, effective, originalTap);
             } catch (Exception e) {
                 logError("処理中の例外: " + e);
             }
         });
     }
 
-    private void ensureModelAndTranslate(String text, java.util.function.Consumer<String> onResult) {
-        if (modelReady) {
-            translator.translate(text)
-                    .addOnSuccessListener(onResult::accept)
-                    .addOnFailureListener(e -> onResult.accept(""));
-        } else {
-            translator.downloadModelIfNeeded(new DownloadConditions.Builder().build())
-                    .addOnSuccessListener(v -> {
-                        modelReady = true;
-                        translator.translate(text)
-                                .addOnSuccessListener(onResult::accept)
-                                .addOnFailureListener(e -> onResult.accept(""));
-                    })
-                    .addOnFailureListener(e -> onResult.accept(""));
+    /** バックグラウンドスレッドから呼び出される。ML Kitのtranslate()は同一Translatorインスタンスに対する
+     * 同時実行をサポートしておらず、続けて呼ぶと先勝ちの呼び出しが結果を返さなくなることがある。通知が
+     * 連続して届いてもこのメソッドは常に1件ずつ完了を待ってから戻るため、翻訳の取りこぼしを防げる。 */
+    private String translateBlocking(String text) {
+        try {
+            if (!modelReady) {
+                com.google.android.gms.tasks.Tasks.await(
+                        translator.downloadModelIfNeeded(new DownloadConditions.Builder().build()));
+                modelReady = true;
+            }
+            return com.google.android.gms.tasks.Tasks.await(translator.translate(text));
+        } catch (Exception e) {
+            logError("翻訳中の例外: " + e);
+            return "";
         }
     }
 
