@@ -12,6 +12,8 @@ public class DefaultFilterEntity {
     public long id = 1;
 
     public boolean soundEnabled = true;
+    /** 使用する通知音の種類(0〜NotificationChannels.SOUND_OPTION_COUNT-1)。 */
+    public int soundOptionIndex = 0;
     public boolean popupEnabled = true;
     public boolean translateEnabled = true;
     public int textColor = Color.BLACK;
@@ -21,6 +23,7 @@ public class DefaultFilterEntity {
         DefaultFilterEntity e = new DefaultFilterEntity();
         e.id = 1;
         e.soundEnabled = true;
+        e.soundOptionIndex = 0;
         e.popupEnabled = true;
         e.translateEnabled = true;
         e.textColor = Color.BLACK;

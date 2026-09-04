@@ -18,6 +18,8 @@ public class FilterEntity {
     public boolean matchAll = false;
     public boolean caseSensitive = false;
     public boolean soundEnabled = true;
+    /** 使用する通知音の種類(0〜NotificationChannels.SOUND_OPTION_COUNT-1)。 */
+    public int soundOptionIndex = 0;
     public boolean popupEnabled = true;
     public boolean translateEnabled = true;
     public boolean enabled = true;

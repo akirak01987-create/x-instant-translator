@@ -193,7 +193,7 @@ public class XNotificationListener extends NotificationListenerService {
 
     private void postSystemNotification(long historyId, String author, String original, String translated,
                                          FilterMatcher.Effective effective, PendingIntent tap, String sourcePackage) {
-        String channel = effective.sound ? NotificationChannels.SOUND : NotificationChannels.SILENT;
+        String channel = effective.sound ? NotificationChannels.soundChannelId(effective.soundOptionIndex) : NotificationChannels.SILENT;
         boolean hasTranslation = translated != null && !translated.isEmpty();
         String contentText = hasTranslation ? translated : original;
         String bigText = hasTranslation ? (translated + "\n\n原文: " + original) : original;

@@ -101,6 +101,15 @@
             android:layout_height="wrap_content"
             android:text="通知音を鳴らす" />
 
+        <TextView
+            style="@style/SectionLabel"
+            android:text="通知音の種類" />
+        <RadioGroup
+            android:id="@+id/radio_sound_option"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
         <Switch
             android:id="@+id/switch_popup"
             android:layout_width="match_parent"

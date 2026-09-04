@@ -24,6 +24,7 @@ public final class FilterMatcher {
         public boolean translate;
         public boolean popup;
         public boolean sound;
+        public int soundOptionIndex = 0;
         public int textColor = Color.BLACK;
         public int backgroundColor = Color.WHITE;
     }
@@ -39,6 +40,7 @@ public final class FilterMatcher {
                 e.translate = f.translateEnabled;
                 e.popup = f.popupEnabled;
                 e.sound = f.soundEnabled;
+                e.soundOptionIndex = f.soundOptionIndex;
                 e.textColor = f.textColor;
                 e.backgroundColor = f.backgroundColor;
                 return e;
@@ -51,12 +53,14 @@ public final class FilterMatcher {
             e.translate = defaults.translateEnabled;
             e.popup = defaults.popupEnabled;
             e.sound = defaults.soundEnabled;
+            e.soundOptionIndex = defaults.soundOptionIndex;
             e.textColor = defaults.textColor;
             e.backgroundColor = defaults.backgroundColor;
         } else {
             e.translate = true;
             e.popup = true;
             e.sound = true;
+            e.soundOptionIndex = 0;
             e.textColor = Color.BLACK;
             e.backgroundColor = Color.WHITE;
         }

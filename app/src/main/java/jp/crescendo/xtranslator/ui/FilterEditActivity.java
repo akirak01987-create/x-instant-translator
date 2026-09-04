@@ -22,6 +22,7 @@ import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.DefaultFilterEntity;
 import jp.crescendo.xtranslator.data.FilterEntity;
 import jp.crescendo.xtranslator.filter.FilterMatcher;
+import jp.crescendo.xtranslator.service.NotificationChannels;
 import jp.crescendo.xtranslator.util.ColorPalette;
 import jp.crescendo.xtranslator.util.InsetsUtil;
 
@@ -45,6 +46,8 @@ public class FilterEditActivity extends AppCompatActivity {
     private CheckBox checkCaseSensitive;
     private Switch switchFilterEnabled;
     private Switch switchSound;
+    private RadioGroup radioSoundOption;
+    private RadioButton[] soundOptionButtons;
     private Switch switchPopup;
     private Switch switchTranslate;
     private LinearLayout rowTextColors;
@@ -91,6 +94,7 @@ public class FilterEditActivity extends AppCompatActivity {
         checkCaseSensitive = findViewById(R.id.check_case_sensitive);
         switchFilterEnabled = findViewById(R.id.switch_enabled);
         switchSound = findViewById(R.id.switch_sound);
+        radioSoundOption = findViewById(R.id.radio_sound_option);
         switchPopup = findViewById(R.id.switch_popup);
         switchTranslate = findViewById(R.id.switch_translate);
         rowTextColors = findViewById(R.id.row_text_colors);
@@ -102,6 +106,36 @@ public class FilterEditActivity extends AppCompatActivity {
         switchSound.setChecked(true);
         switchPopup.setChecked(true);
         switchTranslate.setChecked(true);
+        buildSoundOptionRow();
+    }
+
+    /** 通知音の選択肢を5つ動的に生成する。表示名は端末の通知音一覧から取得するため、
+     * レイアウトXMLでは固定テキストにできない。 */
+    private void buildSoundOptionRow() {
+        radioSoundOption.removeAllViews();
+        soundOptionButtons = new RadioButton[NotificationChannels.SOUND_OPTION_COUNT];
+        for (int i = 0; i < NotificationChannels.SOUND_OPTION_COUNT; i++) {
+            RadioButton button = new RadioButton(this);
+            button.setId(View.generateViewId());
+            button.setText(NotificationChannels.soundLabel(this, i));
+            soundOptionButtons[i] = button;
+            radioSoundOption.addView(button);
+        }
+        soundOptionButtons[0].setChecked(true);
+    }
+
+    private void setSelectedSoundOption(int index) {
+        if (soundOptionButtons == null) return;
+        int clamped = Math.max(0, Math.min(soundOptionButtons.length - 1, index));
+        soundOptionButtons[clamped].setChecked(true);
+    }
+
+    private int getSelectedSoundOption() {
+        if (soundOptionButtons == null) return 0;
+        for (int i = 0; i < soundOptionButtons.length; i++) {
+            if (soundOptionButtons[i].isChecked()) return i;
+        }
+        return 0;
     }
 
     private void loadData() {
@@ -123,6 +157,7 @@ public class FilterEditActivity extends AppCompatActivity {
 
     private void applyDefault(DefaultFilterEntity def) {
         switchSound.setChecked(def.soundEnabled);
+        setSelectedSoundOption(def.soundOptionIndex);
         switchPopup.setChecked(def.popupEnabled);
         switchTranslate.setChecked(def.translateEnabled);
         selectedTextColor = def.textColor;
@@ -139,6 +174,7 @@ public class FilterEditActivity extends AppCompatActivity {
         checkCaseSensitive.setChecked(f.caseSensitive);
         switchFilterEnabled.setChecked(f.enabled);
         switchSound.setChecked(f.soundEnabled);
+        setSelectedSoundOption(f.soundOptionIndex);
         switchPopup.setChecked(f.popupEnabled);
         switchTranslate.setChecked(f.translateEnabled);
         selectedTextColor = f.textColor;
@@ -206,6 +242,7 @@ public class FilterEditActivity extends AppCompatActivity {
             DefaultFilterEntity e = new DefaultFilterEntity();
             e.id = 1;
             e.soundEnabled = switchSound.isChecked();
+            e.soundOptionIndex = getSelectedSoundOption();
             e.popupEnabled = switchPopup.isChecked();
             e.translateEnabled = switchTranslate.isChecked();
             e.textColor = selectedTextColor;
@@ -224,6 +261,7 @@ public class FilterEditActivity extends AppCompatActivity {
         f.caseSensitive = checkCaseSensitive.isChecked();
         f.enabled = switchFilterEnabled.isChecked();
         f.soundEnabled = switchSound.isChecked();
+        f.soundOptionIndex = getSelectedSoundOption();
         f.popupEnabled = switchPopup.isChecked();
         f.translateEnabled = switchTranslate.isChecked();
         f.textColor = selectedTextColor;
