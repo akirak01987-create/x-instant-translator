@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +44,12 @@ public class SettingsFragment extends Fragment {
     private TextView rawLogText;
     private EditText editRetentionMinutes;
     private Switch switchHideOriginal;
+    private RadioGroup radioHistoryTextSize;
+
+    private static final int[] TEXT_SIZE_RADIO_IDS = {
+            R.id.radio_text_size_0, R.id.radio_text_size_1, R.id.radio_text_size_2,
+            R.id.radio_text_size_3, R.id.radio_text_size_4
+    };
 
     @Nullable
     @Override
@@ -63,6 +70,17 @@ public class SettingsFragment extends Fragment {
         switchHideOriginal.setChecked(Prefs.isHideOriginalNotificationEnabled(requireContext()));
         switchHideOriginal.setOnCheckedChangeListener((btn, checked) ->
                 Prefs.setHideOriginalNotificationEnabled(requireContext(), checked));
+
+        radioHistoryTextSize = view.findViewById(R.id.radio_history_text_size);
+        radioHistoryTextSize.check(TEXT_SIZE_RADIO_IDS[Prefs.getHistoryTextSizeLevel(requireContext())]);
+        radioHistoryTextSize.setOnCheckedChangeListener((group, checkedId) -> {
+            for (int i = 0; i < TEXT_SIZE_RADIO_IDS.length; i++) {
+                if (TEXT_SIZE_RADIO_IDS[i] == checkedId) {
+                    Prefs.setHistoryTextSizeLevel(requireContext(), i);
+                    break;
+                }
+            }
+        });
 
         view.findViewById(R.id.btn_grant_access).setOnClickListener(v ->
                 startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)));

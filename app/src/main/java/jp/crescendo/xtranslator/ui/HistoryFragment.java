@@ -80,6 +80,7 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
     @Override
     public void onResume() {
         super.onResume();
+        adapter.setTextScale(Prefs.getHistoryTextScale(requireContext()));
         pollHandler.removeCallbacks(pollRunnable);
         pollHandler.post(pollRunnable);
     }

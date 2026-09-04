@@ -1,6 +1,7 @@
 package jp.crescendo.xtranslator.ui;
 
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,10 @@ import jp.crescendo.xtranslator.R;
 import jp.crescendo.xtranslator.data.NotificationEntity;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
+    private static final float BASE_META_SP = 11f;
+    private static final float BASE_BODY_SP = 13f;
+    private static final float BASE_TRANSLATED_SP = 14f;
+
     public interface Listener {
         void onOpen(NotificationEntity item);
 
@@ -28,9 +33,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     private final List<NotificationEntity> items = new ArrayList<>();
     private final Listener listener;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.JAPAN);
+    private float textScale = 1f;
 
     public HistoryAdapter(Listener listener) {
         this.listener = listener;
+    }
+
+    /** タブレットなど画面が大きい端末向けの文字サイズ倍率(1.0が標準)。変更時は一覧を再描画する。 */
+    public void setTextScale(float scale) {
+        if (textScale == scale) return;
+        textScale = scale;
+        notifyDataSetChanged();
     }
 
     public void submit(List<NotificationEntity> newItems) {
@@ -56,6 +69,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
         holder.meta.setText(dateFormat.format(item.receivedAt) + "　" +
                 (TextUtils.isEmpty(item.author) ? "投稿者不明" : item.author));
+        holder.meta.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASE_META_SP * textScale);
+        holder.original.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASE_BODY_SP * textScale);
+        holder.translated.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASE_TRANSLATED_SP * textScale);
 
         boolean hasTranslation = item.wasTranslated && !TextUtils.isEmpty(item.translatedText);
         if (hasTranslation) {

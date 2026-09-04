@@ -135,6 +135,60 @@
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
+            android:text="通知履歴の文字サイズ（タブレットなど画面が大きい端末向け）" />
+
+        <RadioGroup
+            android:id="@+id/radio_history_text_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_text_size_0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="小" />
+
+            <RadioButton
+                android:id="@+id/radio_text_size_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="やや小" />
+
+            <RadioButton
+                android:id="@+id/radio_text_size_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="標準" />
+
+            <RadioButton
+                android:id="@+id/radio_text_size_3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="やや大" />
+
+            <RadioButton
+                android:id="@+id/radio_text_size_4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="大" />
+        </RadioGroup>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
