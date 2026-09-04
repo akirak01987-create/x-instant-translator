@@ -193,7 +193,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Xの英語投稿を受信した瞬間に端末内で日本語へ翻訳します。翻訳・履歴データは外部サーバーへ送信しません。"
+            android:text="Xの英語投稿を受信した瞬間に端末内で日本語へ翻訳します。翻訳・履歴データは外部サーバーへ送信しません(下記のLINE連携・AI分析機能をオンにした場合を除く)。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
@@ -230,6 +230,50 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="LINE Developersコンソールで発行したチャンネルアクセストークン(長期)を貼り付けてください。フィルターごとに「LINE公式アカウントに送信する」をオンにすると、一致した投稿の翻訳文がこの公式アカウントを友だち追加した全員へブロードキャスト配信されます。トークンは端末内にのみ保存されます。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
+            android:text="Gemini APIによるAI分析（通知履歴画面の「AI分析」ボタン用）" />
+
+        <EditText
+            android:id="@+id/edit_gemini_api_key"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Gemini APIキーを入力"
+            android:inputType="textPassword"
+            android:textIsSelectable="true" />
+
+        <EditText
+            android:id="@+id/edit_gemini_model"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="モデル名（例: gemini-2.5-flash）"
+            android:inputType="text" />
+
+        <Button
+            android:id="@+id/btn_save_gemini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="保存"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Google AI Studio(aistudio.google.com)で発行したAPIキーを貼り付けてください。通知履歴画面の「🤖 AI分析」ボタンから、表示中(絞り込み中)の投稿の翻訳文をGeminiへ送信し、ドル円相場に関連しそうな内容を中心に分析させます。APIキー・モデル名は端末内にのみ保存されます。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 

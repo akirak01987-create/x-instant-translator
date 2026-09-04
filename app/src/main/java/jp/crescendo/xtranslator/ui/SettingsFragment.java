@@ -46,6 +46,8 @@ public class SettingsFragment extends Fragment {
     private Switch switchHideOriginal;
     private RadioGroup radioHistoryTextSize;
     private EditText editLineToken;
+    private EditText editGeminiApiKey;
+    private EditText editGeminiModel;
 
     private static final int[] TEXT_SIZE_RADIO_IDS = {
             R.id.radio_text_size_0, R.id.radio_text_size_1, R.id.radio_text_size_2,
@@ -102,6 +104,12 @@ public class SettingsFragment extends Fragment {
         editLineToken = view.findViewById(R.id.edit_line_token);
         editLineToken.setText(Prefs.getLineChannelAccessToken(requireContext()));
         view.findViewById(R.id.btn_save_line_token).setOnClickListener(v -> saveLineToken());
+
+        editGeminiApiKey = view.findViewById(R.id.edit_gemini_api_key);
+        editGeminiApiKey.setText(Prefs.getGeminiApiKey(requireContext()));
+        editGeminiModel = view.findViewById(R.id.edit_gemini_model);
+        editGeminiModel.setText(Prefs.getGeminiModel(requireContext()));
+        view.findViewById(R.id.btn_save_gemini).setOnClickListener(v -> saveGeminiSettings());
     }
 
     @Override
@@ -192,6 +200,15 @@ public class SettingsFragment extends Fragment {
         Toast.makeText(requireContext(),
                 token.isEmpty() ? "LINEチャンネルアクセストークンを削除しました" : "LINEチャンネルアクセストークンを保存しました",
                 Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveGeminiSettings() {
+        String apiKey = editGeminiApiKey.getText().toString().trim();
+        String model = editGeminiModel.getText().toString().trim();
+        Prefs.setGeminiApiKey(requireContext(), apiKey);
+        Prefs.setGeminiModel(requireContext(), model);
+        editGeminiModel.setText(Prefs.getGeminiModel(requireContext()));
+        Toast.makeText(requireContext(), "Gemini設定を保存しました", Toast.LENGTH_SHORT).show();
     }
 
     private void downloadModel() {

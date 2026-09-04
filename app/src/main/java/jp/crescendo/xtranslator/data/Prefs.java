@@ -11,6 +11,9 @@ public final class Prefs {
     private static final String KEY_HISTORY_TEXT_SIZE_LEVEL = "history_text_size_level";
     private static final String KEY_SOUND_SLOT_URI_PREFIX = "sound_slot_uri_";
     private static final String KEY_LINE_CHANNEL_ACCESS_TOKEN = "line_channel_access_token";
+    private static final String KEY_GEMINI_API_KEY = "gemini_api_key";
+    private static final String KEY_GEMINI_MODEL = "gemini_model";
+    public static final String DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
     public static final int DEFAULT_RETENTION_MINUTES = 1440; // 1日
     public static final int MIN_RETENTION_MINUTES = 1;
     public static final int MAX_RETENTION_MINUTES = 525_600; // 365日
@@ -77,6 +80,25 @@ public final class Prefs {
 
     public static void setLineChannelAccessToken(Context context, String token) {
         prefs(context).edit().putString(KEY_LINE_CHANNEL_ACCESS_TOKEN, token == null ? "" : token.trim()).apply();
+    }
+
+    /** Gemini API(Google AI Studio発行のAPIキー)。未設定なら空文字。 */
+    public static String getGeminiApiKey(Context context) {
+        return prefs(context).getString(KEY_GEMINI_API_KEY, "");
+    }
+
+    public static void setGeminiApiKey(Context context, String key) {
+        prefs(context).edit().putString(KEY_GEMINI_API_KEY, key == null ? "" : key.trim()).apply();
+    }
+
+    /** 使用するGeminiのモデル名。将来モデルが廃止された場合でもアプリ更新なしで変更できるよう設定可能にしている。 */
+    public static String getGeminiModel(Context context) {
+        String value = prefs(context).getString(KEY_GEMINI_MODEL, DEFAULT_GEMINI_MODEL);
+        return (value == null || value.trim().isEmpty()) ? DEFAULT_GEMINI_MODEL : value.trim();
+    }
+
+    public static void setGeminiModel(Context context, String model) {
+        prefs(context).edit().putString(KEY_GEMINI_MODEL, model == null ? "" : model.trim()).apply();
     }
 
     /** 設定変更の即時反映用。呼び出し側はリスナーへの強参照を保持し続けること(SharedPreferencesは
