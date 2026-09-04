@@ -163,7 +163,7 @@ public class FilterEditActivity extends AppCompatActivity {
     private Button compactButton(String text) {
         Button button = new Button(this);
         button.setText(text);
-        button.setTextAllCaps(false);
+        button.setAllCaps(false);
         button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         button.setMinWidth(0);
         button.setMinimumWidth(0);
@@ -172,7 +172,7 @@ public class FilterEditActivity extends AppCompatActivity {
         button.setPadding(dp(10), dp(2), dp(10), dp(2));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.marginStart = dp(6);
+        lp.setMarginStart(dp(6));
         button.setLayoutParams(lp);
         return button;
     }
