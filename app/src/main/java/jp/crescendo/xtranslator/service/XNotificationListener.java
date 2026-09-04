@@ -4,6 +4,8 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -42,6 +44,12 @@ public class XNotificationListener extends NotificationListenerService {
      * ようにする。設定しないと通知が届くたびに1件ずつバラバラに積み上がってしまう。 */
     private static final String GROUP_KEY = "jp.crescendo.xtranslator.X_GROUP";
     private static final int SUMMARY_NOTIFICATION_ID = 19_999;
+    /** 「タブレットだけ長時間で通知が止まる」現象の切り分け用。OSのDoze/バッテリー最適化・
+     * メーカー独自の省電力機能でリスナーサービスごと止められているのか、それともX側が
+     * バックグラウンドでのプッシュ受信自体を止められているのかを見分けるため、リスナーが
+     * 生きている間は定期的に「生存確認」をログへ書き込む。ここが止まっていればサービス自体が
+     * 落とされたと分かり、Xの投稿だけ止まっていればXアプリ側の問題だと切り分けられる。 */
+    private static final long HEARTBEAT_INTERVAL_MS = 5 * 60 * 1000; // 5分
     /** 翻訳モデルのダウンロード・翻訳呼び出し1回あたりの上限。ここで頭打ちにしないと、
      * ネットワーク不調時にキューが詰まり、翻訳が不要な後続の通知まで巻き添えで遅延してしまう。 */
     private static final long TRANSLATE_TIMEOUT_SECONDS = 15;
@@ -64,6 +72,15 @@ public class XNotificationListener extends NotificationListenerService {
      * それらまで巻き添えで遅延してしまう。 */
     private final ExecutorService lineExecutor = Executors.newSingleThreadExecutor();
 
+    private final Handler heartbeatHandler = new Handler(Looper.getMainLooper());
+    private final Runnable heartbeatRunnable = new Runnable() {
+        @Override
+        public void run() {
+            logDiagnostic("(生存確認)", "❤️ 通知リスナーは動作中です");
+            heartbeatHandler.postDelayed(this, HEARTBEAT_INTERVAL_MS);
+        }
+    };
+
     private Translator translator;
     private volatile boolean modelReady;
     private AppDatabase db;
@@ -80,6 +97,25 @@ public class XNotificationListener extends NotificationListenerService {
         translator = Translation.getClient(options);
         translator.downloadModelIfNeeded(new DownloadConditions.Builder().build())
                 .addOnSuccessListener(v -> modelReady = true);
+    }
+
+    /** システムに通知リスナーとして接続された(=通知を受信できる状態になった)タイミング。
+     * ここから定期的な生存確認ログを開始する。 */
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+        logDiagnostic("(リスナー状態)", "✅ 通知リスナーに接続されました");
+        heartbeatHandler.removeCallbacks(heartbeatRunnable);
+        heartbeatHandler.postDelayed(heartbeatRunnable, HEARTBEAT_INTERVAL_MS);
+    }
+
+    /** OS側の都合(バッテリー最適化・メーカー独自の省電力機能など)でリスナーが切断された場合に
+     * 呼ばれる。呼ばれること自体が「アプリ側の不具合ではなくOSに止められた」ことの証拠になる。 */
+    @Override
+    public void onListenerDisconnected() {
+        logDiagnostic("(リスナー状態)", "⚠️ 通知リスナーがOSにより切断されました");
+        heartbeatHandler.removeCallbacks(heartbeatRunnable);
+        super.onListenerDisconnected();
     }
 
     @Override
@@ -352,6 +388,20 @@ public class XNotificationListener extends NotificationListenerService {
         });
     }
 
+    /** 診断用: リスナーの生存確認・接続状態など、通知そのものとは別の内部イベントを記録する。 */
+    private void logDiagnostic(String marker, String message) {
+        RawLogEntity log = new RawLogEntity();
+        log.timestamp = System.currentTimeMillis();
+        log.packageName = marker;
+        log.isXPackage = true;
+        log.textFound = true;
+        log.textPreview = message;
+        AppExecutors.background(() -> {
+            db.rawLogDao().insert(log);
+            db.rawLogDao().trimToRecent();
+        });
+    }
+
     /** 画面共有・録画中の機密保護機能などにより、Android自体が通知本文を伏せ字プレースホルダーに
      * 差し替えている場合を検出する。この場合、本当の投稿内容はOSレベルでどの通知リスナーからも
      * 見えなくなっており、アプリ側で復元する手段はない。 */
@@ -389,6 +439,8 @@ public class XNotificationListener extends NotificationListenerService {
 
     @Override
     public void onDestroy() {
+        logDiagnostic("(リスナー状態)", "🛑 通知リスナーサービスが破棄されました(onDestroy)");
+        heartbeatHandler.removeCallbacks(heartbeatRunnable);
         if (translator != null) translator.close();
         notificationExecutor.shutdown();
         lineExecutor.shutdown();

@@ -52,6 +52,31 @@
             android:text="Android通知設定を確認（通知が来ない場合はこちら）"
             android:textAllCaps="false" />
 
+        <TextView
+            android:id="@+id/text_battery_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="確認中…"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_battery_optimization"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="バッテリー最適化の対象から除外する"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="タブレットなど普段あまり触らない端末を長時間放置すると、OSやメーカー独自の省電力機能によってこのアプリが停止させられ、通知が遅れたり届かなくなったりすることがあります。対象から除外しておくことを強くおすすめします。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
         <Button
             android:id="@+id/btn_prepare_model"
             android:layout_width="match_parent"

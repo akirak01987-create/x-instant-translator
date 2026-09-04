@@ -2,9 +2,12 @@ package jp.crescendo.xtranslator.ui;
 
 import android.app.NotificationManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +43,7 @@ import jp.crescendo.xtranslator.service.XNotificationListener;
 public class SettingsFragment extends Fragment {
     private TextView listenerStatusText;
     private TextView postPermissionStatusText;
+    private TextView batteryStatusText;
     private TextView historyCountText;
     private TextView rawLogText;
     private EditText editRetentionMinutes;
@@ -66,6 +70,7 @@ public class SettingsFragment extends Fragment {
 
         listenerStatusText = view.findViewById(R.id.text_listener_status);
         postPermissionStatusText = view.findViewById(R.id.text_post_permission_status);
+        batteryStatusText = view.findViewById(R.id.text_battery_status);
         historyCountText = view.findViewById(R.id.text_history_count);
         rawLogText = view.findViewById(R.id.text_raw_log);
         editRetentionMinutes = view.findViewById(R.id.edit_retention_minutes);
@@ -96,6 +101,8 @@ public class SettingsFragment extends Fragment {
             startActivity(intent);
         });
 
+        view.findViewById(R.id.btn_battery_optimization).setOnClickListener(v -> requestIgnoreBatteryOptimization());
+
         view.findViewById(R.id.btn_save_retention).setOnClickListener(v -> saveRetentionMinutes());
         view.findViewById(R.id.btn_refresh_log).setOnClickListener(v -> refreshRawLog());
 
@@ -117,6 +124,7 @@ public class SettingsFragment extends Fragment {
         super.onResume();
         updateListenerStatus();
         updatePostPermissionStatus();
+        updateBatteryOptimizationStatus();
         updateHistoryCount();
         refreshRawLog();
     }
@@ -140,6 +148,28 @@ public class SettingsFragment extends Fragment {
                 ? "✓ このアプリの通知（ポップアップ表示）：許可済み"
                 : "！このアプリの通知（ポップアップ表示）：未許可 → これが原因で通知が来ないことがあります");
         postPermissionStatusText.setTextColor(enabled ? Color.rgb(0, 120, 60) : Color.rgb(190, 50, 35));
+    }
+
+    /** タブレットなど普段あまり触らない端末では、メーカー独自の省電力機能やAndroidのバッテリー最適化に
+     * よってこのアプリ(通知リスナー)がバックグラウンドで停止させられ、長時間放置後に通知が来なくなる
+     * ことがある。対象から除外されているかを表示し、除外されていなければワンタップで設定できるようにする。 */
+    private void updateBatteryOptimizationStatus() {
+        PowerManager pm = (PowerManager) requireContext().getSystemService(Context.POWER_SERVICE);
+        boolean ignoring = pm != null && pm.isIgnoringBatteryOptimizations(requireContext().getPackageName());
+        batteryStatusText.setText(ignoring
+                ? "✓ バッテリー最適化：対象外（推奨設定です）"
+                : "！バッテリー最適化：対象になっています → タブレットなど長時間放置する端末では、これが原因で通知が遅れたり止まったりすることがあります");
+        batteryStatusText.setTextColor(ignoring ? Color.rgb(0, 120, 60) : Color.rgb(190, 50, 35));
+    }
+
+    private void requestIgnoreBatteryOptimization() {
+        Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        intent.setData(Uri.parse("package:" + requireContext().getPackageName()));
+        try {
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "この端末では自動での設定画面表示に対応していません。手動で電池の最適化設定を確認してください", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void updateHistoryCount() {
