@@ -11,10 +11,10 @@ public interface RawLogDao {
     @Insert
     void insert(RawLogEntity entity);
 
-    @Query("SELECT * FROM raw_log ORDER BY timestamp DESC LIMIT 50")
+    @Query("SELECT * FROM raw_log ORDER BY timestamp DESC LIMIT 200")
     List<RawLogEntity> getRecent();
 
-    @Query("DELETE FROM raw_log WHERE id NOT IN (SELECT id FROM raw_log ORDER BY timestamp DESC LIMIT 50)")
+    @Query("DELETE FROM raw_log WHERE id NOT IN (SELECT id FROM raw_log ORDER BY timestamp DESC LIMIT 200)")
     void trimToRecent();
 
     @Query("DELETE FROM raw_log")

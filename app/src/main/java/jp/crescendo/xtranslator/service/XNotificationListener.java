@@ -79,7 +79,10 @@ public class XNotificationListener extends NotificationListenerService {
         Bundle extras = sbn.getNotification().extras;
         String title = string(extras.getCharSequence(Notification.EXTRA_TITLE));
         String text = extractText(extras);
-        logReceived(packageName, isXPackage, text);
+        // 診断ログはXパッケージのみ記録する。他アプリの通知(LINE・Chromeなど)も記録すると、
+        // それらが短時間に大量に届いた際に上限(直近N件)をすぐ使い切ってしまい、
+        // 数秒前のXの受信状況すら確認できなくなってしまう。
+        if (isXPackage) logReceived(packageName, text);
 
         if (!isXPackage) return;
         if (text.isEmpty()) return;
@@ -262,14 +265,15 @@ public class XNotificationListener extends NotificationListenerService {
         }
     }
 
-    /** 診断用: 通知リスナーが実際に何を受信しているかを記録する。Xパッケージ以外は本文を保存しない。 */
-    private void logReceived(String packageName, boolean isXPackage, String text) {
+    /** 診断用: Xパッケージから実際に何を受信しているかを記録する。他アプリの通知はここでは記録しない
+     * (直近N件しか保持できないログが無関係な通知で埋まってしまうのを防ぐため)。 */
+    private void logReceived(String packageName, String text) {
         RawLogEntity log = new RawLogEntity();
         log.timestamp = System.currentTimeMillis();
         log.packageName = packageName;
-        log.isXPackage = isXPackage;
+        log.isXPackage = true;
         log.textFound = !text.isEmpty();
-        log.textPreview = isXPackage ? text.substring(0, Math.min(text.length(), 60)) : "";
+        log.textPreview = text.substring(0, Math.min(text.length(), 60));
         AppExecutors.background(() -> {
             db.rawLogDao().insert(log);
             db.rawLogDao().trimToRecent();
