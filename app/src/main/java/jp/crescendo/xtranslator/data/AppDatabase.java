@@ -2,12 +2,26 @@ package jp.crescendo.xtranslator.data;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @Database(entities = {NotificationEntity.class, FilterEntity.class, DefaultFilterEntity.class, RawLogEntity.class, WidgetConfigEntity.class}, version = 7, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
+
+    /** フィルターごとの通知音選択(soundOptionIndex)を追加。列を足すだけなので、破壊的な
+     * fallbackToDestructiveMigrationに頼らず既存のフィルター・履歴データを保持したまま移行する。 */
+    private static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE filters ADD COLUMN soundOptionIndex INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE default_filter ADD COLUMN soundOptionIndex INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
     public abstract NotificationDao notificationDao();
 
     public abstract FilterDao filterDao();
@@ -25,6 +39,7 @@ public abstract class AppDatabase extends RoomDatabase {
             synchronized (AppDatabase.class) {
                 if (instance == null) {
                     instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "x_translator.db")
+                            .addMigrations(MIGRATION_6_7)
                             .fallbackToDestructiveMigration()
                             .build();
                 }

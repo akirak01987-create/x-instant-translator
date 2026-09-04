@@ -1,9 +1,14 @@
 package jp.crescendo.xtranslator.ui;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -13,6 +18,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -29,6 +35,7 @@ import jp.crescendo.xtranslator.util.InsetsUtil;
 public class FilterEditActivity extends AppCompatActivity {
     public static final String EXTRA_FILTER_ID = "filter_id";
     public static final String EXTRA_IS_DEFAULT = "is_default";
+    private static final int REQUEST_PICK_SOUND = 501;
 
     private long filterId = -1;
     private boolean isDefault;
@@ -48,6 +55,8 @@ public class FilterEditActivity extends AppCompatActivity {
     private Switch switchSound;
     private RadioGroup radioSoundOption;
     private RadioButton[] soundOptionButtons;
+    private int pendingPickSlotIndex = -1;
+    private Ringtone previewRingtone;
     private Switch switchPopup;
     private Switch switchTranslate;
     private LinearLayout rowTextColors;
@@ -110,24 +119,122 @@ public class FilterEditActivity extends AppCompatActivity {
     }
 
     /** 通知音の選択肢を5つ動的に生成する。表示名は端末の通知音一覧から取得するため、
-     * レイアウトXMLでは固定テキストにできない。 */
+     * レイアウトXMLでは固定テキストにできない。各行に試聴ボタンと、端末の通知音一覧から
+     * 任意の音へ差し替える「変更」ボタンを添える。ラジオボタンをRadioGroup直下ではなく
+     * 行(LinearLayout)の中に置くため、排他選択は自前で管理する。 */
     private void buildSoundOptionRow() {
         radioSoundOption.removeAllViews();
         soundOptionButtons = new RadioButton[NotificationChannels.SOUND_OPTION_COUNT];
         for (int i = 0; i < NotificationChannels.SOUND_OPTION_COUNT; i++) {
-            RadioButton button = new RadioButton(this);
-            button.setId(View.generateViewId());
-            button.setText(NotificationChannels.soundLabel(this, i));
-            soundOptionButtons[i] = button;
-            radioSoundOption.addView(button);
+            int index = i;
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            rowLp.topMargin = dp(4);
+            row.setLayoutParams(rowLp);
+
+            RadioButton radio = new RadioButton(this);
+            radio.setId(View.generateViewId());
+            radio.setText(NotificationChannels.soundLabel(this, index));
+            LinearLayout.LayoutParams radioLp = new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+            radio.setLayoutParams(radioLp);
+            radio.setOnClickListener(v -> {
+                for (RadioButton b : soundOptionButtons) b.setChecked(b == radio);
+            });
+            soundOptionButtons[index] = radio;
+
+            Button previewButton = compactButton("▶ 試聴");
+            previewButton.setOnClickListener(v -> playPreview(index));
+
+            Button change = compactButton("変更");
+            change.setOnClickListener(v -> pickDeviceSound(index));
+
+            row.addView(radio);
+            row.addView(previewButton);
+            row.addView(change);
+            radioSoundOption.addView(row);
         }
         soundOptionButtons[0].setChecked(true);
+    }
+
+    private Button compactButton(String text) {
+        Button button = new Button(this);
+        button.setText(text);
+        button.setTextAllCaps(false);
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        button.setMinWidth(0);
+        button.setMinimumWidth(0);
+        button.setMinHeight(0);
+        button.setMinimumHeight(0);
+        button.setPadding(dp(10), dp(2), dp(10), dp(2));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.marginStart = dp(6);
+        button.setLayoutParams(lp);
+        return button;
+    }
+
+    /** 選択中スロットの通知音をその場で再生して試聴する。 */
+    private void playPreview(int index) {
+        stopPreview();
+        Uri uri = NotificationChannels.soundUriForSlot(this, index);
+        if (uri == null) return;
+        try {
+            previewRingtone = RingtoneManager.getRingtone(this, uri);
+            if (previewRingtone != null) previewRingtone.play();
+        } catch (Exception e) {
+            Toast.makeText(this, "この音は再生できませんでした", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void stopPreview() {
+        if (previewRingtone != null && previewRingtone.isPlaying()) {
+            previewRingtone.stop();
+        }
+        previewRingtone = null;
+    }
+
+    /** 端末の通知音一覧(システムのピッカー)から任意の音を選ばせ、対象スロットへ即時反映する。 */
+    private void pickDeviceSound(int index) {
+        pendingPickSlotIndex = index;
+        Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "通知音を選択");
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+        intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false);
+        Uri current = NotificationChannels.soundUriForSlot(this, index);
+        if (current != null) intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current);
+        startActivityForResult(intent, REQUEST_PICK_SOUND);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQUEST_PICK_SOUND || pendingPickSlotIndex == -1) return;
+        int index = pendingPickSlotIndex;
+        pendingPickSlotIndex = -1;
+        if (resultCode != RESULT_OK || data == null) return;
+        Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+        if (uri == null) return;
+        NotificationChannels.setSoundSlotUri(this, index, uri);
+        soundOptionButtons[index].setText(NotificationChannels.soundLabel(this, index));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopPreview();
     }
 
     private void setSelectedSoundOption(int index) {
         if (soundOptionButtons == null) return;
         int clamped = Math.max(0, Math.min(soundOptionButtons.length - 1, index));
-        soundOptionButtons[clamped].setChecked(true);
+        for (int i = 0; i < soundOptionButtons.length; i++) {
+            soundOptionButtons[i].setChecked(i == clamped);
+        }
     }
 
     private int getSelectedSoundOption() {

@@ -11,6 +11,8 @@ import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
 
+import jp.crescendo.xtranslator.data.Prefs;
+
 public final class NotificationChannels {
     public static final String SILENT = "x_translated_silent";
 
@@ -26,21 +28,10 @@ public final class NotificationChannels {
         NotificationManager nm = context.getSystemService(NotificationManager.class);
         if (nm == null) return;
 
-        List<Uri> sounds = availableSoundUris(context);
-        AudioAttributes attrs = new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build();
-
         for (int i = 0; i < SOUND_OPTION_COUNT; i++) {
             String id = soundChannelId(i);
             if (nm.getNotificationChannel(id) != null) continue;
-            NotificationChannel channel = new NotificationChannel(
-                    id, "X通知（音あり・" + soundLabel(context, i) + "）", NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Xの投稿通知をポップアップと通知音付きで表示します");
-            Uri sound = i < sounds.size() ? sounds.get(i) : RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            channel.setSound(sound, attrs);
-            nm.createNotificationChannel(channel);
+            createSoundChannel(context, nm, i);
         }
 
         if (nm.getNotificationChannel(SILENT) == null) {
@@ -57,6 +48,38 @@ public final class NotificationChannels {
     public static String soundChannelId(int index) {
         if (index < 0 || index >= SOUND_OPTION_COUNT) index = 0;
         return SOUND_CHANNEL_PREFIX + index;
+    }
+
+    /** i番目のスロットに実際に割り当てられている通知音。ユーザーが端末の通知音一覧から個別に
+     * 選んでいればそれを、選んでいなければ端末の通知音一覧の先頭から順に割り当てた既定値を返す。 */
+    public static Uri soundUriForSlot(Context context, int index) {
+        if (index < 0 || index >= SOUND_OPTION_COUNT) index = 0;
+        Uri custom = Prefs.getSoundSlotUri(context, index);
+        if (custom != null) return custom;
+        List<Uri> defaults = availableSoundUris(context);
+        return index < defaults.size() ? defaults.get(index) : RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    }
+
+    /** i番目のスロットの通知音を、端末の通知音一覧から選んだ任意の音に差し替える。Androidでは
+     * チャンネル作成後に音を変更できないため、既存チャンネルを削除して同じIDで作り直す。 */
+    public static void setSoundSlotUri(Context context, int index, Uri uri) {
+        Prefs.setSoundSlotUri(context, index, uri);
+        NotificationManager nm = context.getSystemService(NotificationManager.class);
+        if (nm == null) return;
+        nm.deleteNotificationChannel(soundChannelId(index));
+        createSoundChannel(context, nm, index);
+    }
+
+    private static void createSoundChannel(Context context, NotificationManager nm, int index) {
+        AudioAttributes attrs = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        NotificationChannel channel = new NotificationChannel(
+                soundChannelId(index), "X通知（音あり・" + soundLabel(context, index) + "）", NotificationManager.IMPORTANCE_HIGH);
+        channel.setDescription("Xの投稿通知をポップアップと通知音付きで表示します");
+        channel.setSound(soundUriForSlot(context, index), attrs);
+        nm.createNotificationChannel(channel);
     }
 
     /** 設定画面のプレビュー・一覧表示用に、端末が持つ通知音の一覧を取得する。 */
@@ -80,9 +103,8 @@ public final class NotificationChannels {
 
     /** i番目の通知音の表示名(端末のロケールに従った名前)。取得できない場合は「通知音N」。 */
     public static String soundLabel(Context context, int index) {
-        List<Uri> sounds = availableSoundUris(context);
-        if (index < 0 || index >= sounds.size()) return "通知音" + (index + 1);
-        Uri uri = sounds.get(index);
+        if (index < 0 || index >= SOUND_OPTION_COUNT) return "通知音" + (index + 1);
+        Uri uri = soundUriForSlot(context, index);
         try {
             Ringtone ringtone = RingtoneManager.getRingtone(context, uri);
             if (ringtone != null) {

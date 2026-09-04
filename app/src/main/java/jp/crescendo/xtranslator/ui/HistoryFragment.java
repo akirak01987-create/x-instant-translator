@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -56,6 +57,13 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
         }
     };
 
+    /** 設定画面のタブに切り替えても(hide/showのため)このFragmentのonResumeは再度呼ばれない。
+     * 文字サイズ設定をアプリを閉じずとも即座に反映させるため、SharedPreferencesの変更を直接監視する。
+     * SharedPreferencesはリスナーを弱参照でしか保持しないため、フィールドとして強参照を保持する。 */
+    private final SharedPreferences.OnSharedPreferenceChangeListener textSizeListener = (prefs, key) -> {
+        if (isAdded()) adapter.setTextScale(Prefs.getHistoryTextScale(requireContext()));
+    };
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -75,12 +83,20 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
 
         view.findViewById(R.id.btn_clear_all).setOnClickListener(v -> confirmClearAll());
         btnTimeFilter.setOnClickListener(v -> showTimeFilterDialog());
+
+        adapter.setTextScale(Prefs.getHistoryTextScale(requireContext()));
+        Prefs.registerChangeListener(requireContext(), textSizeListener);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Prefs.unregisterChangeListener(requireContext(), textSizeListener);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        adapter.setTextScale(Prefs.getHistoryTextScale(requireContext()));
         pollHandler.removeCallbacks(pollRunnable);
         pollHandler.post(pollRunnable);
     }

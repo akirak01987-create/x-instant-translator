@@ -2,12 +2,14 @@ package jp.crescendo.xtranslator.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 public final class Prefs {
     private static final String FILE = "app_prefs";
     private static final String KEY_RETENTION_MINUTES = "history_retention_minutes";
     private static final String KEY_HIDE_ORIGINAL_NOTIFICATION = "hide_original_notification";
     private static final String KEY_HISTORY_TEXT_SIZE_LEVEL = "history_text_size_level";
+    private static final String KEY_SOUND_SLOT_URI_PREFIX = "sound_slot_uri_";
     public static final int DEFAULT_RETENTION_MINUTES = 1440; // 1日
     public static final int MIN_RETENTION_MINUTES = 1;
     public static final int MAX_RETENTION_MINUTES = 525_600; // 365日
@@ -54,6 +56,27 @@ public final class Prefs {
 
     public static float getHistoryTextScale(Context context) {
         return HISTORY_TEXT_SIZE_SCALES[getHistoryTextSizeLevel(context)];
+    }
+
+    /** スロットに端末の通知音一覧から選ばれた既定以外の音が割り当てられている場合、そのURIを返す。
+     * 未設定(既定のまま)ならnull。 */
+    public static Uri getSoundSlotUri(Context context, int index) {
+        String raw = prefs(context).getString(KEY_SOUND_SLOT_URI_PREFIX + index, null);
+        return raw == null ? null : Uri.parse(raw);
+    }
+
+    public static void setSoundSlotUri(Context context, int index, Uri uri) {
+        prefs(context).edit().putString(KEY_SOUND_SLOT_URI_PREFIX + index, uri == null ? null : uri.toString()).apply();
+    }
+
+    /** 設定変更の即時反映用。呼び出し側はリスナーへの強参照を保持し続けること(SharedPreferencesは
+     * 弱参照でしか保持しないため)。 */
+    public static void registerChangeListener(Context context, SharedPreferences.OnSharedPreferenceChangeListener listener) {
+        prefs(context).registerOnSharedPreferenceChangeListener(listener);
+    }
+
+    public static void unregisterChangeListener(Context context, SharedPreferences.OnSharedPreferenceChangeListener listener) {
+        prefs(context).unregisterOnSharedPreferenceChangeListener(listener);
     }
 
     private static SharedPreferences prefs(Context context) {
