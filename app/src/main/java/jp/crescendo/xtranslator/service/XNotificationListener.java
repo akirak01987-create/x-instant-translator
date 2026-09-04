@@ -37,6 +37,11 @@ import jp.crescendo.xtranslator.widget.WidgetUpdater;
 
 public class XNotificationListener extends NotificationListenerService {
     private static final String[] X_PACKAGES = {"com.twitter.android", "com.twitter.android.lite"};
+    /** ポップアップ通知を1つのグループにまとめるためのキー。個々の通知にこれを設定し、
+     * 別途サマリー通知を同じキーで投稿することで、通知シェード上でひとまとめに表示・折りたたみできる
+     * ようにする。設定しないと通知が届くたびに1件ずつバラバラに積み上がってしまう。 */
+    private static final String GROUP_KEY = "jp.crescendo.xtranslator.X_GROUP";
+    private static final int SUMMARY_NOTIFICATION_ID = 19_999;
     /** 翻訳モデルのダウンロード・翻訳呼び出し1回あたりの上限。ここで頭打ちにしないと、
      * ネットワーク不調時にキューが詰まり、翻訳が不要な後続の通知まで巻き添えで遅延してしまう。 */
     private static final long TRANSLATE_TIMEOUT_SECONDS = 15;
@@ -224,6 +229,7 @@ public class XNotificationListener extends NotificationListenerService {
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(bigText))
                 .setPriority(effective.sound ? NotificationCompat.PRIORITY_HIGH : NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
+                .setGroup(GROUP_KEY)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE);
         if (!effective.sound) builder.setSilent(true);
 
@@ -239,6 +245,42 @@ public class XNotificationListener extends NotificationListenerService {
         if (tapIntent != null) builder.setContentIntent(tapIntent);
 
         NotificationManagerCompat.from(this).notify((int) (20_000 + (historyId % 20_000)), builder.build());
+        updateGroupSummary();
+    }
+
+    /** 個々の通知をグループとしてひとまとめにするためのサマリー通知を更新する。これが無いと、
+     * 同じグループキーを持つ通知同士でもシェード上で折りたたまれず、届くたびに1件ずつ
+     * バラバラに積み上がって見えてしまう。サマリー自体は無音にし、実際の音は各通知の設定に任せる。 */
+    private void updateGroupSummary() {
+        List<NotificationEntity> recent = db.notificationDao().getRecentPopups(8);
+        if (recent.isEmpty()) return;
+
+        NotificationCompat.InboxStyle inbox = new NotificationCompat.InboxStyle()
+                .setBigContentTitle("X即時翻訳");
+        String topLine = "";
+        int shown = 0;
+        for (NotificationEntity n : recent) {
+            String body = (n.wasTranslated && n.translatedText != null && !n.translatedText.isEmpty())
+                    ? n.translatedText : n.originalText;
+            String author = (n.author == null || n.author.isEmpty()) ? "X" : n.author;
+            String line = author + ": " + body;
+            if (shown == 0) topLine = line;
+            if (shown < 5) inbox.addLine(line);
+            shown++;
+        }
+
+        NotificationCompat.Builder summary = new NotificationCompat.Builder(this, NotificationChannels.SILENT)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("X即時翻訳")
+                .setContentText(topLine)
+                .setStyle(inbox)
+                .setGroup(GROUP_KEY)
+                .setGroupSummary(true)
+                .setAutoCancel(true)
+                .setSilent(true)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE);
+
+        NotificationManagerCompat.from(this).notify(SUMMARY_NOTIFICATION_ID, summary.build());
     }
 
     /** 本文の取得元を複数試す。通常の通知(EXTRA_TEXT/EXTRA_BIG_TEXT)に加え、

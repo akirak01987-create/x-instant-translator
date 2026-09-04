@@ -15,6 +15,10 @@ public interface NotificationDao {
     @Query("SELECT * FROM notifications ORDER BY receivedAt DESC")
     List<NotificationEntity> getAll();
 
+    /** 通知グループのサマリー表示用。ポップアップを出した投稿のうち直近N件を新しい順に返す。 */
+    @Query("SELECT * FROM notifications WHERE popupShown = 1 ORDER BY receivedAt DESC LIMIT :limit")
+    List<NotificationEntity> getRecentPopups(int limit);
+
     @Query("DELETE FROM notifications WHERE id = :id")
     void deleteById(long id);
 
