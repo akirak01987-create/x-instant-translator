@@ -59,6 +59,7 @@ public class FilterEditActivity extends AppCompatActivity {
     private Ringtone previewRingtone;
     private Switch switchPopup;
     private Switch switchTranslate;
+    private Switch switchLine;
     private LinearLayout rowTextColors;
     private LinearLayout rowBgColors;
     private TextView preview;
@@ -106,6 +107,7 @@ public class FilterEditActivity extends AppCompatActivity {
         radioSoundOption = findViewById(R.id.radio_sound_option);
         switchPopup = findViewById(R.id.switch_popup);
         switchTranslate = findViewById(R.id.switch_translate);
+        switchLine = findViewById(R.id.switch_line);
         rowTextColors = findViewById(R.id.row_text_colors);
         rowBgColors = findViewById(R.id.row_bg_colors);
         preview = findViewById(R.id.preview);
@@ -267,6 +269,7 @@ public class FilterEditActivity extends AppCompatActivity {
         setSelectedSoundOption(def.soundOptionIndex);
         switchPopup.setChecked(def.popupEnabled);
         switchTranslate.setChecked(def.translateEnabled);
+        switchLine.setChecked(def.lineEnabled);
         selectedTextColor = def.textColor;
         selectedBackgroundColor = def.backgroundColor;
         renderColorRows();
@@ -284,6 +287,7 @@ public class FilterEditActivity extends AppCompatActivity {
         setSelectedSoundOption(f.soundOptionIndex);
         switchPopup.setChecked(f.popupEnabled);
         switchTranslate.setChecked(f.translateEnabled);
+        switchLine.setChecked(f.lineEnabled);
         selectedTextColor = f.textColor;
         selectedBackgroundColor = f.backgroundColor;
         renderColorRows();
@@ -352,6 +356,7 @@ public class FilterEditActivity extends AppCompatActivity {
             e.soundOptionIndex = getSelectedSoundOption();
             e.popupEnabled = switchPopup.isChecked();
             e.translateEnabled = switchTranslate.isChecked();
+            e.lineEnabled = switchLine.isChecked();
             e.textColor = selectedTextColor;
             e.backgroundColor = selectedBackgroundColor;
             AppExecutors.background(() -> {
@@ -371,6 +376,7 @@ public class FilterEditActivity extends AppCompatActivity {
         f.soundOptionIndex = getSelectedSoundOption();
         f.popupEnabled = switchPopup.isChecked();
         f.translateEnabled = switchTranslate.isChecked();
+        f.lineEnabled = switchLine.isChecked();
         f.textColor = selectedTextColor;
         f.backgroundColor = selectedBackgroundColor;
 

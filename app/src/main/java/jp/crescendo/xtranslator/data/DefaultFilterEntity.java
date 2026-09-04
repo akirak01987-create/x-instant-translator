@@ -16,6 +16,8 @@ public class DefaultFilterEntity {
     public int soundOptionIndex = 0;
     public boolean popupEnabled = true;
     public boolean translateEnabled = true;
+    /** trueなら、一致した投稿の翻訳文をLINE公式アカウントから友だち全員へブロードキャスト配信する。 */
+    public boolean lineEnabled = false;
     public int textColor = Color.BLACK;
     public int backgroundColor = Color.WHITE;
 
@@ -26,6 +28,7 @@ public class DefaultFilterEntity {
         e.soundOptionIndex = 0;
         e.popupEnabled = true;
         e.translateEnabled = true;
+        e.lineEnabled = false;
         e.textColor = Color.BLACK;
         e.backgroundColor = Color.WHITE;
         return e;

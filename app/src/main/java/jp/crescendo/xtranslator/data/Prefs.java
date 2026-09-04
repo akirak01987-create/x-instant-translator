@@ -10,6 +10,7 @@ public final class Prefs {
     private static final String KEY_HIDE_ORIGINAL_NOTIFICATION = "hide_original_notification";
     private static final String KEY_HISTORY_TEXT_SIZE_LEVEL = "history_text_size_level";
     private static final String KEY_SOUND_SLOT_URI_PREFIX = "sound_slot_uri_";
+    private static final String KEY_LINE_CHANNEL_ACCESS_TOKEN = "line_channel_access_token";
     public static final int DEFAULT_RETENTION_MINUTES = 1440; // 1日
     public static final int MIN_RETENTION_MINUTES = 1;
     public static final int MAX_RETENTION_MINUTES = 525_600; // 365日
@@ -67,6 +68,15 @@ public final class Prefs {
 
     public static void setSoundSlotUri(Context context, int index, Uri uri) {
         prefs(context).edit().putString(KEY_SOUND_SLOT_URI_PREFIX + index, uri == null ? null : uri.toString()).apply();
+    }
+
+    /** LINE公式アカウント(Messaging API)のチャンネルアクセストークン。未設定なら空文字。 */
+    public static String getLineChannelAccessToken(Context context) {
+        return prefs(context).getString(KEY_LINE_CHANNEL_ACCESS_TOKEN, "");
+    }
+
+    public static void setLineChannelAccessToken(Context context, String token) {
+        prefs(context).edit().putString(KEY_LINE_CHANNEL_ACCESS_TOKEN, token == null ? "" : token.trim()).apply();
     }
 
     /** 設定変更の即時反映用。呼び出し側はリスナーへの強参照を保持し続けること(SharedPreferencesは

@@ -124,6 +124,21 @@
             android:layout_marginTop="8dp"
             android:text="翻訳する（英語の投稿のみ対象）" />
 
+        <Switch
+            android:id="@+id/switch_line"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="LINE公式アカウントに送信する" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="アプリ設定画面でチャンネルアクセストークンを設定していると、一致した投稿の翻訳文をLINE公式アカウントの友だち全員へ配信します。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
         <TextView
             style="@style/SectionLabel"
             android:text="アプリ内ツリーの文字色" />

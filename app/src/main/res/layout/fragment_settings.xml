@@ -207,6 +207,42 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
+            android:text="LINE公式アカウント連携（Messaging APIのチャンネルアクセストークン）" />
+
+        <EditText
+            android:id="@+id/edit_line_token"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="チャンネルアクセストークンを入力"
+            android:inputType="textPassword"
+            android:textIsSelectable="true" />
+
+        <Button
+            android:id="@+id/btn_save_line_token"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="保存"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="LINE Developersコンソールで発行したチャンネルアクセストークン(長期)を貼り付けてください。フィルターごとに「LINE公式アカウントに送信する」をオンにすると、一致した投稿の翻訳文がこの公式アカウントを友だち追加した全員へブロードキャスト配信されます。トークンは端末内にのみ保存されます。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
             android:text="直近の受信ログ（診断用。Xの投稿本文以外は内容を記録しません）" />
 
         <Button

@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {NotificationEntity.class, FilterEntity.class, DefaultFilterEntity.class, RawLogEntity.class, WidgetConfigEntity.class}, version = 7, exportSchema = false)
+@Database(entities = {NotificationEntity.class, FilterEntity.class, DefaultFilterEntity.class, RawLogEntity.class, WidgetConfigEntity.class}, version = 8, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     /** フィルターごとの通知音選択(soundOptionIndex)を追加。列を足すだけなので、破壊的な
@@ -19,6 +19,15 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE filters ADD COLUMN soundOptionIndex INTEGER NOT NULL DEFAULT 0");
             database.execSQL("ALTER TABLE default_filter ADD COLUMN soundOptionIndex INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+    /** フィルターごとのLINE配信選択(lineEnabled)を追加。こちらも列を足すだけなので破壊的リセットなしで移行する。 */
+    private static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE filters ADD COLUMN lineEnabled INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE default_filter ADD COLUMN lineEnabled INTEGER NOT NULL DEFAULT 0");
         }
     };
 
@@ -39,7 +48,7 @@ public abstract class AppDatabase extends RoomDatabase {
             synchronized (AppDatabase.class) {
                 if (instance == null) {
                     instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, "x_translator.db")
-                            .addMigrations(MIGRATION_6_7)
+                            .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
                             .fallbackToDestructiveMigration()
                             .build();
                 }

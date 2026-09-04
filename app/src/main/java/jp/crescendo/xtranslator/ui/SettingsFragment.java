@@ -45,6 +45,7 @@ public class SettingsFragment extends Fragment {
     private EditText editRetentionMinutes;
     private Switch switchHideOriginal;
     private RadioGroup radioHistoryTextSize;
+    private EditText editLineToken;
 
     private static final int[] TEXT_SIZE_RADIO_IDS = {
             R.id.radio_text_size_0, R.id.radio_text_size_1, R.id.radio_text_size_2,
@@ -97,6 +98,10 @@ public class SettingsFragment extends Fragment {
         view.findViewById(R.id.btn_refresh_log).setOnClickListener(v -> refreshRawLog());
 
         editRetentionMinutes.setText(String.valueOf(Prefs.getRetentionMinutes(requireContext())));
+
+        editLineToken = view.findViewById(R.id.edit_line_token);
+        editLineToken.setText(Prefs.getLineChannelAccessToken(requireContext()));
+        view.findViewById(R.id.btn_save_line_token).setOnClickListener(v -> saveLineToken());
     }
 
     @Override
@@ -179,6 +184,14 @@ public class SettingsFragment extends Fragment {
         } catch (NumberFormatException e) {
             Toast.makeText(requireContext(), "数値を入力してください", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void saveLineToken() {
+        String token = editLineToken.getText().toString().trim();
+        Prefs.setLineChannelAccessToken(requireContext(), token);
+        Toast.makeText(requireContext(),
+                token.isEmpty() ? "LINEチャンネルアクセストークンを削除しました" : "LINEチャンネルアクセストークンを保存しました",
+                Toast.LENGTH_SHORT).show();
     }
 
     private void downloadModel() {

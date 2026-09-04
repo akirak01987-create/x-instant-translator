@@ -22,6 +22,8 @@ public class FilterEntity {
     public int soundOptionIndex = 0;
     public boolean popupEnabled = true;
     public boolean translateEnabled = true;
+    /** trueなら、一致した投稿の翻訳文をLINE公式アカウントから友だち全員へブロードキャスト配信する。 */
+    public boolean lineEnabled = false;
     public boolean enabled = true;
     public int textColor = Color.BLACK;
     public int backgroundColor = Color.WHITE;

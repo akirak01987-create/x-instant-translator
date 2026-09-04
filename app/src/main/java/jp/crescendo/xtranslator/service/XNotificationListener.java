@@ -54,6 +54,11 @@ public class XNotificationListener extends NotificationListenerService {
      * まで巻き添えで遅延してしまうため、通知処理はここだけ独立させている。 */
     private final ExecutorService notificationExecutor = Executors.newSingleThreadExecutor();
 
+    /** LINEへの配信専用のスレッド。ネットワークI/Oのため、notificationExecutor(翻訳処理)や
+     * AppExecutors.background(履歴ポーリング等)と共有すると、LINE側の通信が遅い場合に
+     * それらまで巻き添えで遅延してしまう。 */
+    private final ExecutorService lineExecutor = Executors.newSingleThreadExecutor();
+
     private Translator translator;
     private volatile boolean modelReady;
     private AppDatabase db;
@@ -191,7 +196,18 @@ public class XNotificationListener extends NotificationListenerService {
             postSystemNotification(insertedId, author, original, entity.translatedText, effective, originalTap, sourcePackage);
         }
 
+        if (effective.line) {
+            // 失敗してもLineNotifier内でログに留め、他の処理には影響させない。
+            String lineText = buildLineMessage(author, original, entity.translatedText);
+            lineExecutor.execute(() -> LineNotifier.broadcast(this, lineText));
+        }
+
         WidgetUpdater.updateAll(this);
+    }
+
+    private String buildLineMessage(String author, String original, String translated) {
+        String body = (translated != null && !translated.isEmpty()) ? translated : original;
+        return (author == null || author.isEmpty() ? "X" : author) + "\n" + body;
     }
 
     private void postSystemNotification(long historyId, String author, String original, String translated,
@@ -333,6 +349,7 @@ public class XNotificationListener extends NotificationListenerService {
     public void onDestroy() {
         if (translator != null) translator.close();
         notificationExecutor.shutdown();
+        lineExecutor.shutdown();
         super.onDestroy();
     }
 }
