@@ -22,6 +22,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.AiAnalysisActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".widget.WidgetConfigureActivity"
             android:exported="true">
             <intent-filter>

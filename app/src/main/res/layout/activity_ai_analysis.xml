@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ai_analysis_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="AI分析"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
+            android:text="対象期間（現在時刻からさかのぼって分析）" />
+
+        <RadioGroup
+            android:id="@+id/radio_duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radio_duration_10"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="10分" />
+
+            <RadioButton
+                android:id="@+id/radio_duration_30"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="30分" />
+
+            <RadioButton
+                android:id="@+id/radio_duration_60"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1時間" />
+
+            <RadioButton
+                android:id="@+id/radio_duration_180"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="3時間" />
+
+            <RadioButton
+                android:id="@+id/radio_duration_all"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="全履歴" />
+        </RadioGroup>
+
+        <TextView
+            style="@style/SectionLabel"
+            android:text="質問（空欄なら通常のドル円分析を行います）" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/edit_question"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="top"
+                android:hint="例：今動き出した理由は？"
+                android:inputType="textMultiLine"
+                android:minLines="3" />
+
+            <ImageButton
+                android:id="@+id/btn_voice_input"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="top"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="音声で入力"
+                android:src="@android:drawable/ic_btn_speak_now" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_use_template"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="📋 テンプレを使う（値動きの理由を深掘り）"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/btn_run_analysis"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="分析する"
+            android:textAllCaps="false" />
+
+        <ProgressBar
+            android:id="@+id/progress_analysis"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:indeterminate="true"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="12dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            android:id="@+id/text_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="対象期間と質問を選んで「分析する」を押してください。"
+            android:textColor="#424242"
+            android:textIsSelectable="true"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+</ScrollView>

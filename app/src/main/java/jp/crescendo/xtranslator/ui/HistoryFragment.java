@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +32,6 @@ import jp.crescendo.xtranslator.data.AppDatabase;
 import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.NotificationEntity;
 import jp.crescendo.xtranslator.data.Prefs;
-import jp.crescendo.xtranslator.service.GeminiAnalyzer;
 import jp.crescendo.xtranslator.util.PendingIntentCache;
 import jp.crescendo.xtranslator.widget.WidgetUpdater;
 
@@ -84,7 +82,8 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
         btnTimeFilter = view.findViewById(R.id.btn_time_filter);
 
         view.findViewById(R.id.btn_clear_all).setOnClickListener(v -> confirmClearAll());
-        view.findViewById(R.id.btn_ai_analyze).setOnClickListener(v -> runAiAnalysis());
+        view.findViewById(R.id.btn_ai_analyze).setOnClickListener(v ->
+                startActivity(new Intent(requireContext(), AiAnalysisActivity.class)));
         btnTimeFilter.setOnClickListener(v -> showTimeFilterDialog());
 
         adapter.setTextScale(Prefs.getHistoryTextScale(requireContext()));
@@ -205,62 +204,6 @@ public class HistoryFragment extends Fragment implements HistoryAdapter.Listener
             if (inTimeRange(minutesOfDay(item.receivedAt))) filtered.add(item);
         }
         return filtered;
-    }
-
-    /** 現在表示中(時間で絞り込み済み)の投稿をGemini APIへ送り、ドル円相場に関連しそうな
-     * 内容を中心に分析させる。 */
-    private void runAiAnalysis() {
-        List<NotificationEntity> filtered = currentFilteredItems();
-        if (filtered.isEmpty()) {
-            Toast.makeText(requireContext(), "分析対象の投稿がありません(絞り込み範囲に投稿がありません)", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        List<String> posts = new ArrayList<>();
-        for (NotificationEntity item : filtered) {
-            String body = (item.wasTranslated && item.translatedText != null && !item.translatedText.isEmpty())
-                    ? item.translatedText : item.originalText;
-            String author = (item.author == null || item.author.isEmpty()) ? "" : item.author + ": ";
-            posts.add(author + body);
-            if (posts.size() >= GeminiAnalyzer.MAX_POSTS) break;
-        }
-
-        android.content.Context appContext = requireContext().getApplicationContext();
-        Toast.makeText(requireContext(), "AIで分析中…", Toast.LENGTH_SHORT).show();
-        AppExecutors.background(() -> {
-            try {
-                String result = GeminiAnalyzer.analyzeUsdJpy(appContext, posts);
-                AppExecutors.main(() -> {
-                    if (isAdded()) showAnalysisResult(result);
-                });
-            } catch (GeminiAnalyzer.GeminiException e) {
-                String message = e.getMessage();
-                AppExecutors.main(() -> {
-                    if (isAdded()) Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
-                });
-            }
-        });
-    }
-
-    private void showAnalysisResult(String text) {
-        TextView content = new TextView(requireContext());
-        content.setText(text.isEmpty() ? "(結果が空でした)" : text);
-        content.setTextIsSelectable(true);
-        int padding = dp(20);
-        content.setPadding(padding, dp(12), padding, dp(12));
-
-        ScrollView scroll = new ScrollView(requireContext());
-        scroll.addView(content);
-
-        new AlertDialog.Builder(requireContext())
-                .setTitle("ドル円 AI分析結果")
-                .setView(scroll)
-                .setPositiveButton("閉じる", null)
-                .show();
-    }
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private boolean inTimeRange(int minutes) {

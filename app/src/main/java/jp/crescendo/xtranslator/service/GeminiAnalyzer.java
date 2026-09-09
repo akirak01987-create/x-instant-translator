@@ -34,12 +34,22 @@ public final class GeminiAnalyzer {
         }
     }
 
-    /** バックグラウンドスレッドから呼び出すこと(ネットワークI/Oを行う)。 */
-    public static String analyzeUsdJpy(Context context, List<String> posts) throws GeminiException {
+    /** デフォルトの質問(ユーザーが質問欄を空欄にした場合に使う)。 */
+    public static final String DEFAULT_QUESTION =
+            "ドル円(USD/JPY)相場に関連しそうな内容を中心に、日本語で簡潔に分析・要約してください。"
+                    + "関連する投稿が無ければ、その旨を述べたうえで全体の傾向を短くまとめてください。";
+
+    /** よく使う質問のテンプレート(値動きの理由を深掘りする3点セット)。AI分析画面のテンプレボタン用。 */
+    public static final String TEMPLATE_QUESTION_MOVE_REASON =
+            "今動き出した理由は？\nその理由でドル円はどうなるの？\nなぜこのような動きになってるのか説明してください。";
+
+    /** バックグラウンドスレッドから呼び出すこと(ネットワークI/Oを行う)。questionが空ならDEFAULT_QUESTIONを使う。 */
+    public static String analyze(Context context, List<String> posts, String question) throws GeminiException {
         if (posts.isEmpty()) {
-            throw new GeminiException("分析対象の投稿がありません(表示中の履歴が空です)");
+            throw new GeminiException("分析対象の投稿がありません(選択した時間範囲に投稿がありません)");
         }
-        return callGenerateContent(context, buildPrompt(posts));
+        String q = (question == null || question.trim().isEmpty()) ? DEFAULT_QUESTION : question.trim();
+        return callGenerateContent(context, buildPrompt(posts, q));
     }
 
     /** 通知の翻訳エンジンとしてGeminiを使う場合に呼び出す。バックグラウンドスレッドから
@@ -93,15 +103,15 @@ public final class GeminiAnalyzer {
         }
     }
 
-    private static String buildPrompt(List<String> posts) {
+    private static String buildPrompt(List<String> posts, String question) {
         StringBuilder sb = new StringBuilder();
-        sb.append("以下はX(旧Twitter)の経済速報アカウントから届いた直近の投稿(日本語訳)の一覧です。");
-        sb.append("これらの中からドル円(USD/JPY)相場に影響しそうな情報を中心に、日本語で簡潔に分析・要約してください。");
-        sb.append("ドル円に関連する投稿が無ければ、その旨を述べたうえで全体の傾向を短くまとめてください。\n\n");
+        sb.append("以下はX(旧Twitter)の経済速報アカウントから届いた投稿(日本語訳)の一覧です(古い順)。\n\n");
         int count = Math.min(posts.size(), MAX_POSTS);
-        for (int i = 0; i < count; i++) {
+        int start = Math.max(0, posts.size() - count); // 件数が多い場合は直近側を優先する
+        for (int i = start; i < posts.size(); i++) {
             sb.append("・").append(posts.get(i)).append("\n");
         }
+        sb.append("\n上記の投稿を踏まえて、次の質問に日本語で答えてください。\n").append(question);
         return sb.toString();
     }
 
