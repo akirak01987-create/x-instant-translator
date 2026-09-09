@@ -23,6 +23,7 @@ import jp.crescendo.xtranslator.R;
 import jp.crescendo.xtranslator.data.AppDatabase;
 import jp.crescendo.xtranslator.data.AppExecutors;
 import jp.crescendo.xtranslator.data.NotificationEntity;
+import jp.crescendo.xtranslator.data.Prefs;
 import jp.crescendo.xtranslator.service.GeminiAnalyzer;
 import jp.crescendo.xtranslator.util.InsetsUtil;
 
@@ -33,6 +34,7 @@ public class AiAnalysisActivity extends AppCompatActivity {
 
     private RadioGroup radioDuration;
     private EditText editQuestion;
+    private EditText editTemplate;
     private Button btnRunAnalysis;
     private ProgressBar progressAnalysis;
     private TextView textResult;
@@ -45,19 +47,30 @@ public class AiAnalysisActivity extends AppCompatActivity {
 
         radioDuration = findViewById(R.id.radio_duration);
         editQuestion = findViewById(R.id.edit_question);
+        editTemplate = findViewById(R.id.edit_template);
         btnRunAnalysis = findViewById(R.id.btn_run_analysis);
         progressAnalysis = findViewById(R.id.progress_analysis);
         textResult = findViewById(R.id.text_result);
 
         radioDuration.check(R.id.radio_duration_10);
+        editTemplate.setText(Prefs.getAiTemplateQuestion(this));
 
         ImageButton btnVoiceInput = findViewById(R.id.btn_voice_input);
         btnVoiceInput.setOnClickListener(v -> startVoiceInput());
 
+        findViewById(R.id.btn_save_template).setOnClickListener(v -> saveTemplate());
         findViewById(R.id.btn_use_template).setOnClickListener(v ->
-                editQuestion.setText(GeminiAnalyzer.TEMPLATE_QUESTION_MOVE_REASON));
+                editQuestion.setText(editTemplate.getText().toString()));
 
         btnRunAnalysis.setOnClickListener(v -> runAnalysis());
+    }
+
+    /** テンプレート欄の内容を保存する。次回この画面を開いたときも同じ内容が復元される。 */
+    private void saveTemplate() {
+        String text = editTemplate.getText().toString();
+        Prefs.setAiTemplateQuestion(this, text);
+        editTemplate.setText(Prefs.getAiTemplateQuestion(this));
+        Toast.makeText(this, "テンプレートを保存しました", Toast.LENGTH_SHORT).show();
     }
 
     /** 端末の音声入力(Googleアプリ等)を呼び出し、認識結果を質問欄へ入れる。 */

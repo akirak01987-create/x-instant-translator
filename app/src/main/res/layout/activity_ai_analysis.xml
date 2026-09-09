@@ -97,13 +97,51 @@
                 android:src="@android:drawable/ic_btn_speak_now" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btn_use_template"
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="12dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
+            android:text="テンプレート（自由に書き換えて保存できます）" />
+
+        <EditText
+            android:id="@+id/edit_template"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:hint="よく使う質問をここに書いて保存しておけます"
+            android:inputType="textMultiLine"
+            android:minLines="3" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="📋 テンプレを使う（値動きの理由を深掘り）"
-            android:textAllCaps="false" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_save_template"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:text="💾 保存"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_use_template"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:text="📋 質問欄に反映"
+                android:textAllCaps="false" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/btn_run_analysis"

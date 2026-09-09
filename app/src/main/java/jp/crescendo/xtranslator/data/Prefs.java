@@ -16,7 +16,11 @@ public final class Prefs {
     private static final String KEY_DEEPL_API_KEY = "deepl_api_key";
     private static final String KEY_GOOGLE_TRANSLATE_API_KEY = "google_translate_api_key";
     private static final String KEY_TRANSLATION_ENGINE = "translation_engine";
+    private static final String KEY_AI_TEMPLATE_QUESTION = "ai_template_question";
     public static final String DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+    /** AI分析画面の「テンプレを使う」の既定文。ユーザーが編集・保存していなければこれを使う。 */
+    public static final String DEFAULT_AI_TEMPLATE_QUESTION =
+            "今動き出した理由は？\nその理由でドル円はどうなるの？\nなぜこのような動きになってるのか説明してください。";
 
     /** 翻訳エンジンの種類。既定は今までどおり端末内(ML Kit)。 */
     public static final int TRANSLATION_ENGINE_ON_DEVICE = 0;
@@ -137,6 +141,17 @@ public final class Prefs {
 
     public static void setTranslationEngine(Context context, int engine) {
         prefs(context).edit().putInt(KEY_TRANSLATION_ENGINE, engine).apply();
+    }
+
+    /** AI分析画面のテンプレート質問。ユーザーが自由に書き換えて保存できる。未設定・空欄なら
+     * DEFAULT_AI_TEMPLATE_QUESTIONを返す。 */
+    public static String getAiTemplateQuestion(Context context) {
+        String value = prefs(context).getString(KEY_AI_TEMPLATE_QUESTION, DEFAULT_AI_TEMPLATE_QUESTION);
+        return (value == null || value.trim().isEmpty()) ? DEFAULT_AI_TEMPLATE_QUESTION : value;
+    }
+
+    public static void setAiTemplateQuestion(Context context, String question) {
+        prefs(context).edit().putString(KEY_AI_TEMPLATE_QUESTION, question == null ? "" : question.trim()).apply();
     }
 
     /** 設定変更の即時反映用。呼び出し側はリスナーへの強参照を保持し続けること(SharedPreferencesは

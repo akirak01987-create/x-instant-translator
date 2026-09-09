@@ -39,10 +39,6 @@ public final class GeminiAnalyzer {
             "ドル円(USD/JPY)相場に関連しそうな内容を中心に、日本語で簡潔に分析・要約してください。"
                     + "関連する投稿が無ければ、その旨を述べたうえで全体の傾向を短くまとめてください。";
 
-    /** よく使う質問のテンプレート(値動きの理由を深掘りする3点セット)。AI分析画面のテンプレボタン用。 */
-    public static final String TEMPLATE_QUESTION_MOVE_REASON =
-            "今動き出した理由は？\nその理由でドル円はどうなるの？\nなぜこのような動きになってるのか説明してください。";
-
     /** バックグラウンドスレッドから呼び出すこと(ネットワークI/Oを行う)。questionが空ならDEFAULT_QUESTIONを使う。 */
     public static String analyze(Context context, List<String> posts, String question) throws GeminiException {
         if (posts.isEmpty()) {
