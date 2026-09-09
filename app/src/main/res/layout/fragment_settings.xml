@@ -250,145 +250,99 @@
                 android:id="@+id/radio_engine_google"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="14dp"
                 android:text="Google Cloud Translation API" />
+
+            <EditText
+                android:id="@+id/edit_google_translate_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="4dp"
+                android:hint="Google Cloud Translation APIキーを入力"
+                android:inputType="textPassword"
+                android:textIsSelectable="true"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_save_google_translate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="4dp"
+                android:text="保存"
+                android:textAllCaps="false" />
 
             <RadioButton
                 android:id="@+id/radio_engine_deepl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="14dp"
                 android:text="DeepL API" />
+
+            <EditText
+                android:id="@+id/edit_deepl_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="4dp"
+                android:hint="DeepL APIキーを入力"
+                android:inputType="textPassword"
+                android:textIsSelectable="true"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_save_deepl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="4dp"
+                android:text="保存"
+                android:textAllCaps="false" />
 
             <RadioButton
                 android:id="@+id/radio_engine_gemini"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="14dp"
                 android:text="Gemini API" />
+
+            <EditText
+                android:id="@+id/edit_gemini_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="4dp"
+                android:hint="Gemini APIキーを入力"
+                android:inputType="textPassword"
+                android:textIsSelectable="true"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/edit_gemini_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="4dp"
+                android:hint="モデル名（例: gemini-2.5-flash）"
+                android:inputType="text"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btn_save_gemini"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="4dp"
+                android:text="保存"
+                android:textAllCaps="false" />
         </RadioGroup>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="クラウドAPIを選ぶ場合は、下記のそれぞれの欄でAPIキーを設定してください。未設定のまま選択すると翻訳に失敗し、原文がそのまま表示されます。"
-            android:textColor="#9E9E9E"
-            android:textSize="12sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"
-            android:background="#E0E0E0" />
-
-        <TextView
-            style="@style/SectionLabel"
-            android:layout_marginTop="0dp"
-            android:text="Google Cloud Translation APIキー" />
-
-        <EditText
-            android:id="@+id/edit_google_translate_api_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Google Cloud Translation APIキーを入力"
-            android:inputType="textPassword"
-            android:textIsSelectable="true" />
-
-        <Button
-            android:id="@+id/btn_save_google_translate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="保存"
-            android:textAllCaps="false" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Google Cloudコンソールで課金を有効化した上で発行したAPIキーを貼り付けてください。月50万文字までは無料ですが、それを超えると課金されます。無料枠内に収めたい場合はGoogle Cloud Console側で割り当て(クォータ)の上限を設定することをおすすめします。キーは端末内にのみ保存されます。"
-            android:textColor="#9E9E9E"
-            android:textSize="12sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"
-            android:background="#E0E0E0" />
-
-        <TextView
-            style="@style/SectionLabel"
-            android:layout_marginTop="0dp"
-            android:text="DeepL APIキー（翻訳エンジンで「DeepL API」を選んだ場合に使用）" />
-
-        <EditText
-            android:id="@+id/edit_deepl_api_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="DeepL APIキーを入力"
-            android:inputType="textPassword"
-            android:textIsSelectable="true" />
-
-        <Button
-            android:id="@+id/btn_save_deepl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="保存"
-            android:textAllCaps="false" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="DeepL(deepl.com)で発行したAPIキーを貼り付けてください。上記の翻訳エンジンで「DeepL API」を選んだ場合、ここのキーで通知の翻訳を行います。キーは端末内にのみ保存されます。"
-            android:textColor="#9E9E9E"
-            android:textSize="12sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"
-            android:background="#E0E0E0" />
-
-        <TextView
-            style="@style/SectionLabel"
-            android:layout_marginTop="0dp"
-            android:text="Gemini API（通知の翻訳エンジン、および通知履歴画面の「AI分析」ボタンで共用）" />
-
-        <EditText
-            android:id="@+id/edit_gemini_api_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Gemini APIキーを入力"
-            android:inputType="textPassword"
-            android:textIsSelectable="true" />
-
-        <EditText
-            android:id="@+id/edit_gemini_model"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="モデル名（例: gemini-2.5-flash）"
-            android:inputType="text" />
-
-        <Button
-            android:id="@+id/btn_save_gemini"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="保存"
-            android:textAllCaps="false" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Google AI Studio(aistudio.google.com)で発行したAPIキーを貼り付けてください。上記の翻訳エンジンで「Gemini API」を選んだ場合はここのキーで通知の翻訳を行います。また通知履歴画面の「🤖 AI分析」ボタンからも、表示中(絞り込み中)の投稿をGeminiへ送信してドル円相場に関連しそうな内容を分析させる際に使います。APIキー・モデル名は端末内にのみ保存されます。"
+            android:layout_marginTop="10dp"
+            android:text="クラウドAPIを選ぶ場合は、選んだエンジンの下に表示される欄にAPIキーを入力して保存してください。未設定のまま選択すると翻訳に失敗し、原文がそのまま表示されます。キーは端末内にのみ保存されます（Geminiのモデル名は既定のままで問題ありません）。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
@@ -438,39 +392,22 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
-            android:text="直近の受信ログ（診断用。Xの投稿本文以外は内容を記録しません）" />
+            android:text="受信ログ（診断用。Xの投稿本文以外は内容を記録しません）" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btn_download_log"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btn_refresh_log"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="ログを更新"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/btn_download_log"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="📥 ダウンロード"
-                android:textAllCaps="false" />
-        </LinearLayout>
+            android:text="📥 ダウンロード"
+            android:textAllCaps="false" />
 
         <TextView
-            android:id="@+id/text_raw_log"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:textColor="#424242"
-            android:textIsSelectable="true"
-            android:textSize="11sp" />
+            android:layout_marginTop="4dp"
+            android:text="内容を確認したい場合はダウンロードしてテキストファイルとして保存してください。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
 
     </LinearLayout>
 </ScrollView>

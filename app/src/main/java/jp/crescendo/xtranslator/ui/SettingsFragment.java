@@ -51,7 +51,6 @@ public class SettingsFragment extends Fragment {
     private TextView postPermissionStatusText;
     private TextView batteryStatusText;
     private TextView historyCountText;
-    private TextView rawLogText;
     private EditText editRetentionMinutes;
     private Switch switchHideOriginal;
     private RadioGroup radioHistoryTextSize;
@@ -86,7 +85,6 @@ public class SettingsFragment extends Fragment {
         postPermissionStatusText = view.findViewById(R.id.text_post_permission_status);
         batteryStatusText = view.findViewById(R.id.text_battery_status);
         historyCountText = view.findViewById(R.id.text_history_count);
-        rawLogText = view.findViewById(R.id.text_raw_log);
         editRetentionMinutes = view.findViewById(R.id.edit_retention_minutes);
         switchHideOriginal = view.findViewById(R.id.switch_hide_original);
         switchHideOriginal.setChecked(Prefs.isHideOriginalNotificationEnabled(requireContext()));
@@ -118,7 +116,6 @@ public class SettingsFragment extends Fragment {
         view.findViewById(R.id.btn_battery_optimization).setOnClickListener(v -> requestIgnoreBatteryOptimization());
 
         view.findViewById(R.id.btn_save_retention).setOnClickListener(v -> saveRetentionMinutes());
-        view.findViewById(R.id.btn_refresh_log).setOnClickListener(v -> refreshRawLog());
         view.findViewById(R.id.btn_download_log).setOnClickListener(v -> downloadRawLog());
 
         editRetentionMinutes.setText(String.valueOf(Prefs.getRetentionMinutes(requireContext())));
@@ -160,7 +157,6 @@ public class SettingsFragment extends Fragment {
         updatePostPermissionStatus();
         updateBatteryOptimizationStatus();
         updateHistoryCount();
-        refreshRawLog();
     }
 
     private void updateListenerStatus() {
@@ -214,21 +210,6 @@ public class SettingsFragment extends Fragment {
                 if (isAdded()) {
                     historyCountText.setText("現在の保存件数: " + count + " 件（" + Prefs.getRetentionMinutes(requireContext()) + " 分以内の履歴を保持）");
                 }
-            });
-        });
-    }
-
-    private void refreshRawLog() {
-        AppDatabase db = AppDatabase.getInstance(requireContext());
-        AppExecutors.background(() -> {
-            List<RawLogEntity> logs = db.rawLogDao().getRecent();
-            AppExecutors.main(() -> {
-                if (!isAdded()) return;
-                if (logs.isEmpty()) {
-                    rawLogText.setText("(まだ記録がありません。何らかの通知が届くとここに表示されます)");
-                    return;
-                }
-                rawLogText.setText(buildLogText(logs, "HH:mm:ss"));
             });
         });
     }
