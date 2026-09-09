@@ -322,18 +322,18 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
-            android:text="LINE公式アカウント連携（Messaging APIのチャンネルアクセストークン）" />
+            android:text="DeepL APIキー（翻訳エンジンで「DeepL API」を選んだ場合に使用）" />
 
         <EditText
-            android:id="@+id/edit_line_token"
+            android:id="@+id/edit_deepl_api_key"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="チャンネルアクセストークンを入力"
+            android:hint="DeepL APIキーを入力"
             android:inputType="textPassword"
             android:textIsSelectable="true" />
 
         <Button
-            android:id="@+id/btn_save_line_token"
+            android:id="@+id/btn_save_deepl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -344,7 +344,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="LINE Developersコンソールで発行したチャンネルアクセストークン(長期)を貼り付けてください。フィルターごとに「LINE公式アカウントに送信する」をオンにすると、一致した投稿の翻訳文がこの公式アカウントを友だち追加した全員へブロードキャスト配信されます。トークンは端末内にのみ保存されます。"
+            android:text="DeepL(deepl.com)で発行したAPIキーを貼り付けてください。上記の翻訳エンジンで「DeepL API」を選んだ場合、ここのキーで通知の翻訳を行います。キーは端末内にのみ保存されます。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
@@ -402,18 +402,18 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
-            android:text="DeepL APIキー（翻訳エンジンで「DeepL API」を選んだ場合に使用）" />
+            android:text="LINE公式アカウント連携（Messaging APIのチャンネルアクセストークン）" />
 
         <EditText
-            android:id="@+id/edit_deepl_api_key"
+            android:id="@+id/edit_line_token"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="DeepL APIキーを入力"
+            android:hint="チャンネルアクセストークンを入力"
             android:inputType="textPassword"
             android:textIsSelectable="true" />
 
         <Button
-            android:id="@+id/btn_save_deepl"
+            android:id="@+id/btn_save_line_token"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -424,7 +424,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="DeepL(deepl.com)で発行したAPIキーを貼り付けてください。上記の翻訳エンジンで「DeepL API」を選んだ場合、ここのキーで通知の翻訳を行います。キーは端末内にのみ保存されます。"
+            android:text="LINE Developersコンソールで発行したチャンネルアクセストークン(長期)を貼り付けてください。フィルターごとに「LINE公式アカウントに送信する」をオンにすると、一致した投稿の翻訳文がこの公式アカウントを友だち追加した全員へブロードキャスト配信されます。トークンは端末内にのみ保存されます。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
@@ -440,13 +440,28 @@
             android:layout_marginTop="0dp"
             android:text="直近の受信ログ（診断用。Xの投稿本文以外は内容を記録しません）" />
 
-        <Button
-            android:id="@+id/btn_refresh_log"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="ログを更新"
-            android:textAllCaps="false" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_refresh_log"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="ログを更新"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btn_download_log"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="📥 ダウンロード"
+                android:textAllCaps="false" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/text_raw_log"

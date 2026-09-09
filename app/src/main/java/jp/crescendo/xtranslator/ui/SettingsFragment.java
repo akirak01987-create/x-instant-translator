@@ -1,5 +1,6 @@
 package jp.crescendo.xtranslator.ui;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -29,7 +30,10 @@ import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.Translator;
 import com.google.mlkit.nl.translate.TranslatorOptions;
 
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,6 +45,8 @@ import jp.crescendo.xtranslator.data.RawLogEntity;
 import jp.crescendo.xtranslator.service.XNotificationListener;
 
 public class SettingsFragment extends Fragment {
+    private static final int REQUEST_SAVE_LOG = 801;
+
     private TextView listenerStatusText;
     private TextView postPermissionStatusText;
     private TextView batteryStatusText;
@@ -113,6 +119,7 @@ public class SettingsFragment extends Fragment {
 
         view.findViewById(R.id.btn_save_retention).setOnClickListener(v -> saveRetentionMinutes());
         view.findViewById(R.id.btn_refresh_log).setOnClickListener(v -> refreshRawLog());
+        view.findViewById(R.id.btn_download_log).setOnClickListener(v -> downloadRawLog());
 
         editRetentionMinutes.setText(String.valueOf(Prefs.getRetentionMinutes(requireContext())));
 
@@ -221,20 +228,70 @@ public class SettingsFragment extends Fragment {
                     rawLogText.setText("(まだ記録がありません。何らかの通知が届くとここに表示されます)");
                     return;
                 }
-                SimpleDateFormat fmt = new SimpleDateFormat("HH:mm:ss", Locale.JAPAN);
-                StringBuilder sb = new StringBuilder();
-                for (RawLogEntity log : logs) {
-                    sb.append(fmt.format(log.timestamp)).append("  ").append(log.packageName);
-                    sb.append(log.isXPackage ? "  [X宛]" : "");
-                    sb.append(log.textFound ? "  本文あり" : "  本文なし");
-                    if (log.isXPackage && !log.textPreview.isEmpty()) {
-                        sb.append("\n    ").append(log.textPreview);
-                    }
-                    sb.append("\n");
-                }
-                rawLogText.setText(sb.toString().trim());
+                rawLogText.setText(buildLogText(logs, "HH:mm:ss"));
             });
         });
+    }
+
+    private String buildLogText(List<RawLogEntity> logs, String timePattern) {
+        SimpleDateFormat fmt = new SimpleDateFormat(timePattern, Locale.JAPAN);
+        StringBuilder sb = new StringBuilder();
+        for (RawLogEntity log : logs) {
+            sb.append(fmt.format(log.timestamp)).append("  ").append(log.packageName);
+            sb.append(log.isXPackage ? "  [X宛]" : "");
+            sb.append(log.textFound ? "  本文あり" : "  本文なし");
+            if (log.isXPackage && !log.textPreview.isEmpty()) {
+                sb.append("\n    ").append(log.textPreview);
+            }
+            sb.append("\n");
+        }
+        return sb.toString().trim();
+    }
+
+    /** 直近の受信ログをテキストファイルとして端末に保存する。保存先はシステムのファイル選択画面
+     * (Storage Access Framework)で選ばせるため、特別なストレージ権限は不要。 */
+    private void downloadRawLog() {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/plain");
+        String filename = "x_instant_translator_log_"
+                + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.JAPAN).format(new Date()) + ".txt";
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+        try {
+            startActivityForResult(intent, REQUEST_SAVE_LOG);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "この端末では保存先の選択に対応していません", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQUEST_SAVE_LOG || resultCode != Activity.RESULT_OK || data == null) return;
+        Uri uri = data.getData();
+        if (uri == null) return;
+
+        AppDatabase db = AppDatabase.getInstance(requireContext());
+        Context appContext = requireContext().getApplicationContext();
+        AppExecutors.background(() -> {
+            List<RawLogEntity> logs = db.rawLogDao().getRecent();
+            String text = logs.isEmpty() ? "(記録がありません)" : buildLogText(logs, "yyyy-MM-dd HH:mm:ss");
+            boolean success = writeTextToUri(appContext, uri, text);
+            AppExecutors.main(() -> {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), success ? "ログを保存しました" : "保存に失敗しました", Toast.LENGTH_SHORT).show();
+            });
+        });
+    }
+
+    private boolean writeTextToUri(Context context, Uri uri, String text) {
+        try (OutputStream os = context.getContentResolver().openOutputStream(uri)) {
+            if (os == null) return false;
+            os.write(text.getBytes(StandardCharsets.UTF_8));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private void saveRetentionMinutes() {
