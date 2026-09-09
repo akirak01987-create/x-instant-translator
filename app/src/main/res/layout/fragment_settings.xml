@@ -312,6 +312,42 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
+            android:text="DeepL APIキー（準備中：現時点ではキーの保存のみで、翻訳機能ではまだ使用されません）" />
+
+        <EditText
+            android:id="@+id/edit_deepl_api_key"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="DeepL APIキーを入力"
+            android:inputType="textPassword"
+            android:textIsSelectable="true" />
+
+        <Button
+            android:id="@+id/btn_save_deepl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="保存"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="DeepL(deepl.com)で発行したAPIキーを貼り付けておくと、今後追加予定の翻訳エンジン選択機能で使えるようになります。キーは端末内にのみ保存されます。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
             android:text="直近の受信ログ（診断用。Xの投稿本文以外は内容を記録しません）" />
 
         <Button

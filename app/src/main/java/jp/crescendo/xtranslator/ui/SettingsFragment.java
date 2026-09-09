@@ -52,6 +52,7 @@ public class SettingsFragment extends Fragment {
     private EditText editLineToken;
     private EditText editGeminiApiKey;
     private EditText editGeminiModel;
+    private EditText editDeepLApiKey;
 
     private static final int[] TEXT_SIZE_RADIO_IDS = {
             R.id.radio_text_size_0, R.id.radio_text_size_1, R.id.radio_text_size_2,
@@ -117,6 +118,10 @@ public class SettingsFragment extends Fragment {
         editGeminiModel = view.findViewById(R.id.edit_gemini_model);
         editGeminiModel.setText(Prefs.getGeminiModel(requireContext()));
         view.findViewById(R.id.btn_save_gemini).setOnClickListener(v -> saveGeminiSettings());
+
+        editDeepLApiKey = view.findViewById(R.id.edit_deepl_api_key);
+        editDeepLApiKey.setText(Prefs.getDeepLApiKey(requireContext()));
+        view.findViewById(R.id.btn_save_deepl).setOnClickListener(v -> saveDeepLApiKey());
     }
 
     @Override
@@ -239,6 +244,14 @@ public class SettingsFragment extends Fragment {
         Prefs.setGeminiModel(requireContext(), model);
         editGeminiModel.setText(Prefs.getGeminiModel(requireContext()));
         Toast.makeText(requireContext(), "Gemini設定を保存しました", Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveDeepLApiKey() {
+        String key = editDeepLApiKey.getText().toString().trim();
+        Prefs.setDeepLApiKey(requireContext(), key);
+        Toast.makeText(requireContext(),
+                key.isEmpty() ? "DeepL APIキーを削除しました" : "DeepL APIキーを保存しました(まだ翻訳機能では使用されません)",
+                Toast.LENGTH_SHORT).show();
     }
 
     private void downloadModel() {

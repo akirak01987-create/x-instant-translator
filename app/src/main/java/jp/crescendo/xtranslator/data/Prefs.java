@@ -13,6 +13,7 @@ public final class Prefs {
     private static final String KEY_LINE_CHANNEL_ACCESS_TOKEN = "line_channel_access_token";
     private static final String KEY_GEMINI_API_KEY = "gemini_api_key";
     private static final String KEY_GEMINI_MODEL = "gemini_model";
+    private static final String KEY_DEEPL_API_KEY = "deepl_api_key";
     public static final String DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
     public static final int DEFAULT_RETENTION_MINUTES = 1440; // 1日
     public static final int MIN_RETENTION_MINUTES = 1;
@@ -99,6 +100,16 @@ public final class Prefs {
 
     public static void setGeminiModel(Context context, String model) {
         prefs(context).edit().putString(KEY_GEMINI_MODEL, model == null ? "" : model.trim()).apply();
+    }
+
+    /** DeepL APIキー。未設定なら空文字。現時点ではキーの保存のみで、翻訳エンジンとしてはまだ
+     * 使用していない(将来、翻訳エンジン選択機能を追加する際に使用する予定)。 */
+    public static String getDeepLApiKey(Context context) {
+        return prefs(context).getString(KEY_DEEPL_API_KEY, "");
+    }
+
+    public static void setDeepLApiKey(Context context, String key) {
+        prefs(context).edit().putString(KEY_DEEPL_API_KEY, key == null ? "" : key.trim()).apply();
     }
 
     /** 設定変更の即時反映用。呼び出し側はリスナーへの強参照を保持し続けること(SharedPreferencesは
