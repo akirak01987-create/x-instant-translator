@@ -218,7 +218,97 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Xの英語投稿を受信した瞬間に端末内で日本語へ翻訳します。翻訳・履歴データは外部サーバーへ送信しません(下記のLINE連携・AI分析機能をオンにした場合を除く)。"
+            android:text="既定では、Xの英語投稿を受信した瞬間に端末内で日本語へ翻訳します(外部送信なし)。下記で翻訳エンジンをクラウドAPIに切り替えた場合、投稿本文がそのサービスへ送信されます。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
+            android:text="翻訳エンジン" />
+
+        <RadioGroup
+            android:id="@+id/radio_translation_engine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/radio_engine_on_device"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="端末内（ML Kit・既定・外部送信なし）" />
+
+            <RadioButton
+                android:id="@+id/radio_engine_google"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Google Cloud Translation API" />
+
+            <RadioButton
+                android:id="@+id/radio_engine_deepl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="DeepL API" />
+
+            <RadioButton
+                android:id="@+id/radio_engine_gemini"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Gemini API" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="クラウドAPIを選ぶ場合は、下記のそれぞれの欄でAPIキーを設定してください。未設定のまま選択すると翻訳に失敗し、原文がそのまま表示されます。"
+            android:textColor="#9E9E9E"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="#E0E0E0" />
+
+        <TextView
+            style="@style/SectionLabel"
+            android:layout_marginTop="0dp"
+            android:text="Google Cloud Translation APIキー" />
+
+        <EditText
+            android:id="@+id/edit_google_translate_api_key"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Google Cloud Translation APIキーを入力"
+            android:inputType="textPassword"
+            android:textIsSelectable="true" />
+
+        <Button
+            android:id="@+id/btn_save_google_translate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="保存"
+            android:textAllCaps="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Google Cloudコンソールで課金を有効化した上で発行したAPIキーを貼り付けてください。月50万文字までは無料ですが、それを超えると課金されます。無料枠内に収めたい場合はGoogle Cloud Console側で割り当て(クォータ)の上限を設定することをおすすめします。キーは端末内にのみ保存されます。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
@@ -268,7 +358,7 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
-            android:text="Gemini APIによるAI分析（通知履歴画面の「AI分析」ボタン用）" />
+            android:text="Gemini API（通知の翻訳エンジン、および通知履歴画面の「AI分析」ボタンで共用）" />
 
         <EditText
             android:id="@+id/edit_gemini_api_key"
@@ -298,7 +388,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Google AI Studio(aistudio.google.com)で発行したAPIキーを貼り付けてください。通知履歴画面の「🤖 AI分析」ボタンから、表示中(絞り込み中)の投稿の翻訳文をGeminiへ送信し、ドル円相場に関連しそうな内容を中心に分析させます。APIキー・モデル名は端末内にのみ保存されます。"
+            android:text="Google AI Studio(aistudio.google.com)で発行したAPIキーを貼り付けてください。上記の翻訳エンジンで「Gemini API」を選んだ場合はここのキーで通知の翻訳を行います。また通知履歴画面の「🤖 AI分析」ボタンからも、表示中(絞り込み中)の投稿をGeminiへ送信してドル円相場に関連しそうな内容を分析させる際に使います。APIキー・モデル名は端末内にのみ保存されます。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 
@@ -312,7 +402,7 @@
         <TextView
             style="@style/SectionLabel"
             android:layout_marginTop="0dp"
-            android:text="DeepL APIキー（準備中：現時点ではキーの保存のみで、翻訳機能ではまだ使用されません）" />
+            android:text="DeepL APIキー（翻訳エンジンで「DeepL API」を選んだ場合に使用）" />
 
         <EditText
             android:id="@+id/edit_deepl_api_key"
@@ -334,7 +424,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="DeepL(deepl.com)で発行したAPIキーを貼り付けておくと、今後追加予定の翻訳エンジン選択機能で使えるようになります。キーは端末内にのみ保存されます。"
+            android:text="DeepL(deepl.com)で発行したAPIキーを貼り付けてください。上記の翻訳エンジンで「DeepL API」を選んだ場合、ここのキーで通知の翻訳を行います。キーは端末内にのみ保存されます。"
             android:textColor="#9E9E9E"
             android:textSize="12sp" />
 

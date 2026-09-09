@@ -53,10 +53,17 @@ public class SettingsFragment extends Fragment {
     private EditText editGeminiApiKey;
     private EditText editGeminiModel;
     private EditText editDeepLApiKey;
+    private EditText editGoogleTranslateApiKey;
+    private RadioGroup radioTranslationEngine;
 
     private static final int[] TEXT_SIZE_RADIO_IDS = {
             R.id.radio_text_size_0, R.id.radio_text_size_1, R.id.radio_text_size_2,
             R.id.radio_text_size_3, R.id.radio_text_size_4
+    };
+
+    /** Prefs.TRANSLATION_ENGINE_*の並びと対応させる。 */
+    private static final int[] TRANSLATION_ENGINE_RADIO_IDS = {
+            R.id.radio_engine_on_device, R.id.radio_engine_google, R.id.radio_engine_deepl, R.id.radio_engine_gemini
     };
 
     @Nullable
@@ -122,6 +129,21 @@ public class SettingsFragment extends Fragment {
         editDeepLApiKey = view.findViewById(R.id.edit_deepl_api_key);
         editDeepLApiKey.setText(Prefs.getDeepLApiKey(requireContext()));
         view.findViewById(R.id.btn_save_deepl).setOnClickListener(v -> saveDeepLApiKey());
+
+        editGoogleTranslateApiKey = view.findViewById(R.id.edit_google_translate_api_key);
+        editGoogleTranslateApiKey.setText(Prefs.getGoogleTranslateApiKey(requireContext()));
+        view.findViewById(R.id.btn_save_google_translate).setOnClickListener(v -> saveGoogleTranslateApiKey());
+
+        radioTranslationEngine = view.findViewById(R.id.radio_translation_engine);
+        radioTranslationEngine.check(TRANSLATION_ENGINE_RADIO_IDS[Prefs.getTranslationEngine(requireContext())]);
+        radioTranslationEngine.setOnCheckedChangeListener((group, checkedId) -> {
+            for (int i = 0; i < TRANSLATION_ENGINE_RADIO_IDS.length; i++) {
+                if (TRANSLATION_ENGINE_RADIO_IDS[i] == checkedId) {
+                    Prefs.setTranslationEngine(requireContext(), i);
+                    break;
+                }
+            }
+        });
     }
 
     @Override
@@ -250,7 +272,15 @@ public class SettingsFragment extends Fragment {
         String key = editDeepLApiKey.getText().toString().trim();
         Prefs.setDeepLApiKey(requireContext(), key);
         Toast.makeText(requireContext(),
-                key.isEmpty() ? "DeepL APIキーを削除しました" : "DeepL APIキーを保存しました(まだ翻訳機能では使用されません)",
+                key.isEmpty() ? "DeepL APIキーを削除しました" : "DeepL APIキーを保存しました",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveGoogleTranslateApiKey() {
+        String key = editGoogleTranslateApiKey.getText().toString().trim();
+        Prefs.setGoogleTranslateApiKey(requireContext(), key);
+        Toast.makeText(requireContext(),
+                key.isEmpty() ? "Google Cloud Translation APIキーを削除しました" : "Google Cloud Translation APIキーを保存しました",
                 Toast.LENGTH_SHORT).show();
     }
 

@@ -14,7 +14,15 @@ public final class Prefs {
     private static final String KEY_GEMINI_API_KEY = "gemini_api_key";
     private static final String KEY_GEMINI_MODEL = "gemini_model";
     private static final String KEY_DEEPL_API_KEY = "deepl_api_key";
+    private static final String KEY_GOOGLE_TRANSLATE_API_KEY = "google_translate_api_key";
+    private static final String KEY_TRANSLATION_ENGINE = "translation_engine";
     public static final String DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+
+    /** 翻訳エンジンの種類。既定は今までどおり端末内(ML Kit)。 */
+    public static final int TRANSLATION_ENGINE_ON_DEVICE = 0;
+    public static final int TRANSLATION_ENGINE_GOOGLE = 1;
+    public static final int TRANSLATION_ENGINE_DEEPL = 2;
+    public static final int TRANSLATION_ENGINE_GEMINI = 3;
     public static final int DEFAULT_RETENTION_MINUTES = 1440; // 1日
     public static final int MIN_RETENTION_MINUTES = 1;
     public static final int MAX_RETENTION_MINUTES = 525_600; // 365日
@@ -102,14 +110,33 @@ public final class Prefs {
         prefs(context).edit().putString(KEY_GEMINI_MODEL, model == null ? "" : model.trim()).apply();
     }
 
-    /** DeepL APIキー。未設定なら空文字。現時点ではキーの保存のみで、翻訳エンジンとしてはまだ
-     * 使用していない(将来、翻訳エンジン選択機能を追加する際に使用する予定)。 */
+    /** DeepL APIキー。未設定なら空文字。 */
     public static String getDeepLApiKey(Context context) {
         return prefs(context).getString(KEY_DEEPL_API_KEY, "");
     }
 
     public static void setDeepLApiKey(Context context, String key) {
         prefs(context).edit().putString(KEY_DEEPL_API_KEY, key == null ? "" : key.trim()).apply();
+    }
+
+    /** Google Cloud Translation APIキー。未設定なら空文字。 */
+    public static String getGoogleTranslateApiKey(Context context) {
+        return prefs(context).getString(KEY_GOOGLE_TRANSLATE_API_KEY, "");
+    }
+
+    public static void setGoogleTranslateApiKey(Context context, String key) {
+        prefs(context).edit().putString(KEY_GOOGLE_TRANSLATE_API_KEY, key == null ? "" : key.trim()).apply();
+    }
+
+    /** どの翻訳エンジンを使うか。TRANSLATION_ENGINE_*定数のいずれか。既定は端末内(ML Kit)。 */
+    public static int getTranslationEngine(Context context) {
+        int value = prefs(context).getInt(KEY_TRANSLATION_ENGINE, TRANSLATION_ENGINE_ON_DEVICE);
+        if (value < TRANSLATION_ENGINE_ON_DEVICE || value > TRANSLATION_ENGINE_GEMINI) return TRANSLATION_ENGINE_ON_DEVICE;
+        return value;
+    }
+
+    public static void setTranslationEngine(Context context, int engine) {
+        prefs(context).edit().putInt(KEY_TRANSLATION_ENGINE, engine).apply();
     }
 
     /** 設定変更の即時反映用。呼び出し側はリスナーへの強参照を保持し続けること(SharedPreferencesは

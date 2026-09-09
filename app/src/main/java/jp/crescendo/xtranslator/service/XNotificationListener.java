@@ -178,23 +178,40 @@ public class XNotificationListener extends NotificationListenerService {
         });
     }
 
-    /** バックグラウンドスレッドから呼び出される。ML Kitのtranslate()は同一Translatorインスタンスに対する
-     * 同時実行をサポートしておらず、続けて呼ぶと先勝ちの呼び出しが結果を返さなくなることがある。通知が
-     * 連続して届いてもこのメソッドは常に1件ずつ完了を待ってから戻るため、翻訳の取りこぼしを防げる。 */
+    /** バックグラウンドスレッドから呼び出される。設定画面で選んだ翻訳エンジンに振り分ける。
+     * どのエンジンも1件ずつ完了を待ってから戻るため、通知が連続して届いても翻訳の取りこぼしを
+     * 防げる(ML Kitの制約に合わせて全エンジン共通でこの方式にしている)。 */
     private String translateBlocking(String text) {
+        int engine = Prefs.getTranslationEngine(this);
         try {
-            if (!modelReady) {
-                com.google.android.gms.tasks.Tasks.await(
-                        translator.downloadModelIfNeeded(new DownloadConditions.Builder().build()),
-                        TRANSLATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                modelReady = true;
+            switch (engine) {
+                case Prefs.TRANSLATION_ENGINE_GOOGLE:
+                    return GoogleTranslateClient.translate(this, text);
+                case Prefs.TRANSLATION_ENGINE_DEEPL:
+                    return DeepLTranslateClient.translate(this, text);
+                case Prefs.TRANSLATION_ENGINE_GEMINI:
+                    return GeminiAnalyzer.translate(this, text);
+                case Prefs.TRANSLATION_ENGINE_ON_DEVICE:
+                default:
+                    return translateOnDeviceBlocking(text);
             }
-            return com.google.android.gms.tasks.Tasks.await(
-                    translator.translate(text), TRANSLATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (Exception e) {
             logError("翻訳中の例外: " + e);
             return "";
         }
+    }
+
+    /** ML Kitのtranslate()は同一Translatorインスタンスに対する同時実行をサポートしておらず、
+     * 続けて呼ぶと先勝ちの呼び出しが結果を返さなくなることがあるため、必ずここで完了を待つ。 */
+    private String translateOnDeviceBlocking(String text) throws Exception {
+        if (!modelReady) {
+            com.google.android.gms.tasks.Tasks.await(
+                    translator.downloadModelIfNeeded(new DownloadConditions.Builder().build()),
+                    TRANSLATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            modelReady = true;
+        }
+        return com.google.android.gms.tasks.Tasks.await(
+                translator.translate(text), TRANSLATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     private void persistAndNotifySafely(String author, String original, String translated, String sourcePackage,

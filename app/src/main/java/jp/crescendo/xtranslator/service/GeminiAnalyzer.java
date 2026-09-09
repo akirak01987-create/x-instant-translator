@@ -36,15 +36,25 @@ public final class GeminiAnalyzer {
 
     /** バックグラウンドスレッドから呼び出すこと(ネットワークI/Oを行う)。 */
     public static String analyzeUsdJpy(Context context, List<String> posts) throws GeminiException {
+        if (posts.isEmpty()) {
+            throw new GeminiException("分析対象の投稿がありません(表示中の履歴が空です)");
+        }
+        return callGenerateContent(context, buildPrompt(posts));
+    }
+
+    /** 通知の翻訳エンジンとしてGeminiを使う場合に呼び出す。バックグラウンドスレッドから
+     * 呼び出すこと(ネットワークI/Oを行う)。翻訳結果の文章だけを返すよう明示的に指示する。 */
+    public static String translate(Context context, String text) throws GeminiException {
+        String prompt = "以下の英文を自然な日本語に翻訳してください。説明・前置き・引用符は付けず、"
+                + "翻訳結果の文章だけを出力してください。\n\n" + text;
+        return callGenerateContent(context, prompt);
+    }
+
+    private static String callGenerateContent(Context context, String prompt) throws GeminiException {
         String apiKey = Prefs.getGeminiApiKey(context);
         if (apiKey.isEmpty()) {
             throw new GeminiException("アプリ設定画面でGemini APIキーを設定してください");
         }
-        if (posts.isEmpty()) {
-            throw new GeminiException("分析対象の投稿がありません(表示中の履歴が空です)");
-        }
-
-        String prompt = buildPrompt(posts);
         String model = Prefs.getGeminiModel(context);
 
         try {
