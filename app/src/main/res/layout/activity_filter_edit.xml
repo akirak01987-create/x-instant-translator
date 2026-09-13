@@ -155,6 +155,20 @@
 
         <TextView
             style="@style/SectionLabel"
+            android:text="投稿者名の文字色" />
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+            <LinearLayout
+                android:id="@+id/row_author_colors"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <TextView
+            style="@style/SectionLabel"
             android:text="アプリ内ツリーの背景色" />
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -170,14 +184,29 @@
         <TextView
             style="@style/SectionLabel"
             android:text="プレビュー" />
-        <TextView
-            android:id="@+id/preview"
+        <LinearLayout
+            android:id="@+id/preview_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:padding="14dp"
-            android:text="Xの新しい投稿です（プレビュー表示）"
-            android:textSize="14sp" />
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/preview_meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2026/01/01 12:00　@example"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/preview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Xの新しい投稿です（プレビュー表示）"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -43,6 +43,7 @@ public class FilterEditActivity extends AppCompatActivity {
 
     private int selectedTextColor = Color.BLACK;
     private int selectedBackgroundColor = Color.WHITE;
+    private int selectedAuthorColor = 0xFF757575;
 
     private View groupFilterOnly;
     private EditText editAuthor;
@@ -61,7 +62,10 @@ public class FilterEditActivity extends AppCompatActivity {
     private Switch switchTranslate;
     private Switch switchLine;
     private LinearLayout rowTextColors;
+    private LinearLayout rowAuthorColors;
     private LinearLayout rowBgColors;
+    private LinearLayout previewContainer;
+    private TextView previewMeta;
     private TextView preview;
 
     @Override
@@ -109,7 +113,10 @@ public class FilterEditActivity extends AppCompatActivity {
         switchTranslate = findViewById(R.id.switch_translate);
         switchLine = findViewById(R.id.switch_line);
         rowTextColors = findViewById(R.id.row_text_colors);
+        rowAuthorColors = findViewById(R.id.row_author_colors);
         rowBgColors = findViewById(R.id.row_bg_colors);
+        previewContainer = findViewById(R.id.preview_container);
+        previewMeta = findViewById(R.id.preview_meta);
         preview = findViewById(R.id.preview);
 
         radioAny.setChecked(true);
@@ -272,6 +279,7 @@ public class FilterEditActivity extends AppCompatActivity {
         switchLine.setChecked(def.lineEnabled);
         selectedTextColor = def.textColor;
         selectedBackgroundColor = def.backgroundColor;
+        selectedAuthorColor = def.authorColor;
         renderColorRows();
         updatePreview();
     }
@@ -290,6 +298,7 @@ public class FilterEditActivity extends AppCompatActivity {
         switchLine.setChecked(f.lineEnabled);
         selectedTextColor = f.textColor;
         selectedBackgroundColor = f.backgroundColor;
+        selectedAuthorColor = f.authorColor;
         renderColorRows();
         updatePreview();
     }
@@ -297,6 +306,11 @@ public class FilterEditActivity extends AppCompatActivity {
     private void renderColorRows() {
         buildColorRow(rowTextColors, selectedTextColor, color -> {
             selectedTextColor = color;
+            renderColorRows();
+            updatePreview();
+        });
+        buildColorRow(rowAuthorColors, selectedAuthorColor, color -> {
+            selectedAuthorColor = color;
             renderColorRows();
             updatePreview();
         });
@@ -336,11 +350,12 @@ public class FilterEditActivity extends AppCompatActivity {
     }
 
     private void updatePreview() {
+        previewMeta.setTextColor(selectedAuthorColor);
         preview.setTextColor(selectedTextColor);
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(selectedBackgroundColor);
         bg.setCornerRadius(dp(10));
-        preview.setBackground(bg);
+        previewContainer.setBackground(bg);
     }
 
     private int dp(int value) {
@@ -359,6 +374,7 @@ public class FilterEditActivity extends AppCompatActivity {
             e.lineEnabled = switchLine.isChecked();
             e.textColor = selectedTextColor;
             e.backgroundColor = selectedBackgroundColor;
+            e.authorColor = selectedAuthorColor;
             AppExecutors.background(() -> {
                 db.defaultFilterDao().save(e);
                 AppExecutors.main(this::finish);
@@ -379,6 +395,7 @@ public class FilterEditActivity extends AppCompatActivity {
         f.lineEnabled = switchLine.isChecked();
         f.textColor = selectedTextColor;
         f.backgroundColor = selectedBackgroundColor;
+        f.authorColor = selectedAuthorColor;
 
         boolean isNew = editingFilter == null;
         AppExecutors.background(() -> {

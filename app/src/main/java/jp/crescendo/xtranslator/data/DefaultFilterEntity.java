@@ -20,6 +20,8 @@ public class DefaultFilterEntity {
     public boolean lineEnabled = false;
     public int textColor = Color.BLACK;
     public int backgroundColor = Color.WHITE;
+    /** 投稿者名（メタ情報行）の文字色。既定は従来の固定表示と同じグレー。 */
+    public int authorColor = 0xFF757575;
 
     public static DefaultFilterEntity createDefault() {
         DefaultFilterEntity e = new DefaultFilterEntity();
@@ -31,6 +33,7 @@ public class DefaultFilterEntity {
         e.lineEnabled = false;
         e.textColor = Color.BLACK;
         e.backgroundColor = Color.WHITE;
+        e.authorColor = 0xFF757575;
         return e;
     }
 }

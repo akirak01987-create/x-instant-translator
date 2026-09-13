@@ -70,6 +70,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         holder.meta.setText(dateFormat.format(item.receivedAt) + "　" +
                 (TextUtils.isEmpty(item.author) ? "投稿者不明" : item.author));
         holder.meta.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASE_META_SP * textScale);
+        holder.meta.setTextColor(item.authorColor);
         holder.original.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASE_BODY_SP * textScale);
         holder.translated.setTextSize(TypedValue.COMPLEX_UNIT_SP, BASE_TRANSLATED_SP * textScale);
 

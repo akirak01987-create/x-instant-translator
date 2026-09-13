@@ -28,6 +28,7 @@ public final class FilterMatcher {
         public boolean line;
         public int textColor = Color.BLACK;
         public int backgroundColor = Color.WHITE;
+        public int authorColor = 0xFF757575;
     }
 
     /** 上にあるフィルターほど優先。最初に一致したフィルターを適用し、無ければデフォルト設定を返す。 */
@@ -45,6 +46,7 @@ public final class FilterMatcher {
                 e.line = f.lineEnabled;
                 e.textColor = f.textColor;
                 e.backgroundColor = f.backgroundColor;
+                e.authorColor = f.authorColor;
                 return e;
             }
         }
@@ -59,6 +61,7 @@ public final class FilterMatcher {
             e.line = defaults.lineEnabled;
             e.textColor = defaults.textColor;
             e.backgroundColor = defaults.backgroundColor;
+            e.authorColor = defaults.authorColor;
         } else {
             e.translate = true;
             e.popup = true;
@@ -67,6 +70,7 @@ public final class FilterMatcher {
             e.line = false;
             e.textColor = Color.BLACK;
             e.backgroundColor = Color.WHITE;
+            e.authorColor = 0xFF757575;
         }
         return e;
     }

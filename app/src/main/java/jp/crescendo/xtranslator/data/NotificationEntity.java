@@ -18,6 +18,7 @@ public class NotificationEntity {
     public String sourcePackage;
     public int textColor;
     public int backgroundColor;
+    public int authorColor;
     public long filterId;
     public String filterName;
     public boolean popupShown;

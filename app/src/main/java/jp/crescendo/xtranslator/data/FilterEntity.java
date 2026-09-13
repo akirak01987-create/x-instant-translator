@@ -27,5 +27,7 @@ public class FilterEntity {
     public boolean enabled = true;
     public int textColor = Color.BLACK;
     public int backgroundColor = Color.WHITE;
+    /** 投稿者名（メタ情報行）の文字色。既定は従来の固定表示と同じグレー。 */
+    public int authorColor = 0xFF757575;
     public int sortOrder = 0;
 }
