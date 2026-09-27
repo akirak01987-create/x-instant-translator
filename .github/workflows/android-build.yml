@@ -38,3 +38,5 @@ jobs:
           name: XInstantTranslator-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          # debug APKs are rebuilt on every push; keep them 7 days, not the 90-day default
+          retention-days: 7
